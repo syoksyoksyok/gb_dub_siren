@@ -1,0 +1,10 @@
+build/*
+!build/
+!build/gb_dub_siren.gb
+*.ihx
+*.lk
+*.lst
+*.map
+*.noi
+*.o
+*.sym
