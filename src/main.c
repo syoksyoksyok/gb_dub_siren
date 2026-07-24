@@ -322,7 +322,6 @@ static void draw_static_ui(void) {
     put_text(0u, 6u, "DEPTH");
     put_text(0u, 8u, "SPEED");
     put_text(0u, 10u, "LFO WAVE");
-    put_text(11u, 10u, "SND OFF");
     put_text(0u, 17u, "UD SEL LR EDIT");
     waveform_init_map();
 }
@@ -365,7 +364,6 @@ static void draw_ui(void) {
     put_text(6u, 8u, selected_param == PARAM_SPEED ? ">" : " ");
     draw_slider(7u, 8u, lfo_speed, SPEED_MIN, SPEED_MAX);
 
-    put_text(11u, 10u, sound_active ? "SND ON " : "SND OFF");
     ui_dirty = false;
 }
 
@@ -397,6 +395,7 @@ void main(void) {
         wait_vbl_done();
     }
 }
+
 
 
 

@@ -36,7 +36,7 @@ build/gb_dub_siren.gb
 | POT2 LFO深さ | DEPTH選択中のLeft / Right、またはSelect + Left / Right | LFO 深さを増減 |
 | POT3 LFO速度 | SPEED選択中のLeft / Right、またはB + Left / Right | LFO 速度を増減 |
 
-画面上の `>` が現在選択中の項目です。WAVE を選択して Left / Right を押すと LFO 波形を変更できます。B ボタンは Left / Right と組み合わせると LFO SPEED を直接変更できます。Select ボタンは Left / Right と組み合わせると LFO DEPTH を直接変更できます。LFO WAVE 欄には背景タイルで描いた160x48px相当の波形を表示し、現在位置をスプライトマーカーで示します。発音状態は `SND ON/OFF` と表示します。
+画面上の `>` が現在選択中の項目です。WAVE を選択して Left / Right を押すと LFO 波形を変更できます。B ボタンは Left / Right と組み合わせると LFO SPEED を直接変更できます。Select ボタンは Left / Right と組み合わせると LFO DEPTH を直接変更できます。LFO WAVE 欄には背景タイルで描いた160x48px相当の波形を表示し、現在位置をスプライトマーカーで示します。
 
 ## 仕様メモ
 
@@ -65,6 +65,7 @@ build/gb_dub_siren.gb
 - 元のアナログポットと異なり、パラメータは方向キーで段階的に変更します。LFO SPEED の初期値は 1〜32 の約6割にあたる 19 です。Select 単体には機能を割り当てていません。
 - サイン波は軽量化のため 64 値クォーター波形をミラーして 256 ステップ化しています。
 - 実機/エミュレータの APU 差により、音量フェードや再トリガの聴こえ方が多少変わります。
+
 
 
 
