@@ -1,6 +1,7 @@
 PROJECT := syok-dub-siren-gb
 BUILD := build
 SRC := src/main.c
+ROM_TITLE := SYOKDUBSIRENGB
 
 GBDK_HOME ?= C:/Dev_tools/gbdk
 
@@ -21,6 +22,7 @@ all: $(BUILD)/$(PROJECT).gb
 $(BUILD)/$(PROJECT).gb: $(SRC)
 	$(MKDIR)
 	$(LCC) -o $@ $<
+	powershell -NoProfile -ExecutionPolicy Bypass -File patch-rom-header.ps1 -RomPath $@ -Title $(ROM_TITLE)
 
 clean:
 	$(RM)

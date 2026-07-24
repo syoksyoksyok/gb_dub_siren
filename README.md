@@ -26,6 +26,8 @@ make GBDK_HOME=/path/to/gbdk
 build/syok-dub-siren-gb.gb
 ```
 
+ROMヘッダタイトルは、Game Boyヘッダの16文字制限に合わせて `SYOKDUBSIRENGB` に設定しています。
+
 ## 操作対応表
 
 方向キーとボタンの組み合わせで各パラメータを直接変更します。上下キーでLFO波形を変更し、A + Left / Right でPITCH、B + Left / Right でRATE、Select / Start でDEPTHを変更します。
