@@ -11,6 +11,7 @@
 #define WAVEFORM_ROWS 6u
 #define WAVEFORM_PIXEL_W 160u
 #define WAVEFORM_PIXEL_H 48u
+#define WAVEFORM_CENTER_Y ((WAVEFORM_PIXEL_H - 1u) / 2u)
 #define WAVEFORM_START_Y 11u
 #define WAVEFORM_TILE_BASE 128u
 #define WAVEFORM_TILE_COUNT (SCREEN_W * WAVEFORM_ROWS)
@@ -126,7 +127,13 @@ static int16_t lfo_wave_value(uint16_t phase) {
 }
 
 static uint8_t waveform_y_for_x(uint8_t x) {
-    return waveform_y_tables[lfo_wave][x];
+    int16_t source_y = (int16_t)waveform_y_tables[lfo_wave][x];
+    int16_t centered_y = source_y - (int16_t)WAVEFORM_CENTER_Y;
+    int16_t scaled_y = (int16_t)WAVEFORM_CENTER_Y + ((centered_y * (int16_t)lfo_depth_hz) / (int16_t)DEPTH_MAX_HZ);
+
+    if (scaled_y < 0) return 0u;
+    if (scaled_y >= (int16_t)WAVEFORM_PIXEL_H) return (uint8_t)(WAVEFORM_PIXEL_H - 1u);
+    return (uint8_t)scaled_y;
 }
 
 static void waveform_set_pixel(uint8_t x, uint8_t y) {
@@ -193,6 +200,7 @@ static void update_lfo(void) {
 
 static void update_input(void) {
     bool start_pressed = ((joy & J_START) && !(prev_joy & J_START));
+    uint16_t old_lfo_depth_hz = lfo_depth_hz;
 
     if (start_pressed) {
         lfo_wave = (lfo_wave_t)((lfo_wave + 1u) % WAVE_COUNT);
@@ -280,6 +288,10 @@ static void update_input(void) {
             }
         }
         ui_dirty = true;
+    }
+
+    if (old_lfo_depth_hz != lfo_depth_hz) {
+        waveform_dirty = true;
     }
 }
 
