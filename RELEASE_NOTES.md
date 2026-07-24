@@ -6,7 +6,7 @@ Syok Dub Siren GB v1.0.0 is the first public release.
 
 ### Download
 
-Attach this ROM file to the GitHub Release:
+Download the ROM from the release assets:
 
 ```text
 syok-dub-siren-gb.gb
