@@ -28,15 +28,15 @@ build/gb_dub_siren.gb
 
 | 元の操作子 | Game Boy割り当て | 実装挙動 |
 |---|---|---|
-| ゲート | A | 押している間だけ発音 |
+| ゲート | A | 押している間だけ発音。A + Left / Right で発音しながら PITCH 調整 |
 | キル | なし | Game Boy版では未使用 |
 | LFO一時停止 | なし | Game Boy版では未使用 |
 | 波形切替 | Start、または WAVE 選択中の Left / Right | Start、またはWAVE選択中の左右キーでLFO波形切替 |
-| POT1 ピッチ | Up / Downで選択、Left / Rightで変更 | ベースピッチを増減 |
+| POT1 ピッチ | PITCH選択中のLeft / Right、またはA + Left / Right | ベースピッチを増減 |
 | POT2 LFO深さ | DEPTH選択中のLeft / Right、またはSelect + Left / Right | LFO 深さを増減 |
-| POT3 LFO速度 | SPEED選択中のLeft / Right、またはB + Left / Right | LFO 速度を増減 |
+| POT3 LFO速度 | SPEED選択中のLeft / Right、B + Left / Right、またはA + B + Left / Right | LFO 速度を増減 |
 
-画面上の `>` が現在選択中の項目です。WAVE を選択して Left / Right を押すと LFO 波形を変更できます。B ボタンは Left / Right と組み合わせると LFO SPEED を直接変更できます。Select ボタンは Left / Right と組み合わせると LFO DEPTH を直接変更できます。LFO WAVE 欄には背景タイルで描いた160x48px相当の波形を表示し、現在位置をスプライトマーカーで示します。
+画面上の `>` が現在選択中の項目です。WAVE を選択して Left / Right を押すと LFO 波形を変更できます。A ボタンは Left / Right と組み合わせると発音しながら PITCH を直接変更できます。B ボタンは Left / Right と組み合わせると LFO SPEED を直接変更できます。A+B+Left/Right では発音しながら LFO SPEED を変更できます。Select ボタンは Left / Right と組み合わせると LFO DEPTH を直接変更できます。LFO WAVE 欄には背景タイルで描いた160x48px相当の波形を表示し、現在位置をスプライトマーカーで示します。
 
 ## 仕様メモ
 
@@ -61,10 +61,12 @@ build/gb_dub_siren.gb
 
 ## 既知の制限
 
-- Arduino 版の Timer1 ISR による 128 段階フェードとは完全一致ではなく、Game Boy APU に合わせた 16 段階音量フェードです。
+- Arduino 版の Timer1 ISR による 128 段階フェードとは完全一致ではなく、Game Boy APU に合わせた 16 段階音量フェードです。CH1音量は最大15/15まで上げています。
 - 元のアナログポットと異なり、パラメータは方向キーで段階的に変更します。LFO SPEED の初期値は 1〜32 の約6割にあたる 19 です。Select 単体には機能を割り当てていません。
 - サイン波は軽量化のため 64 値クォーター波形をミラーして 256 ステップ化しています。
 - 実機/エミュレータの APU 差により、音量フェードや再トリガの聴こえ方が多少変わります。
+
+
 
 
 

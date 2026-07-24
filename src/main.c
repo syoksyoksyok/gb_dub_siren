@@ -14,6 +14,7 @@
 #define WAVEFORM_START_Y 11u
 #define WAVEFORM_TILE_BASE 128u
 #define WAVEFORM_TILE_COUNT (SCREEN_W * WAVEFORM_ROWS)
+#define WAVEFORM_UPLOAD_TILES_PER_FRAME 4u
 
 #define UI_REFRESH_FRAMES 6u
 #define LFO_STEP_SCALE 96u
@@ -25,7 +26,7 @@
 #define SPEED_MIN 1u
 #define SPEED_MAX 32u
 
-#define VOL_MAX 12u
+#define VOL_MAX 15u
 
 typedef enum {
     WAVE_SINE = 0,
@@ -78,6 +79,7 @@ static bool waveform_dirty = true;
 static uint8_t waveform_tile_data[WAVEFORM_TILE_COUNT * 16u];
 static uint8_t waveform_tile_map[WAVEFORM_TILE_COUNT];
 static uint8_t waveform_y_pixels[WAVEFORM_PIXEL_W];
+static uint8_t waveform_upload_index = WAVEFORM_TILE_COUNT;
 
 static void put_text(uint8_t x, uint8_t y, const char *text) {
     gotoxy(x, y);
@@ -209,7 +211,12 @@ static void update_input(void) {
     }
 
     if (joy & J_RIGHT) {
-        if (joy & J_B) {
+        if ((joy & J_A) && (joy & J_B)) {
+            if (lfo_speed < SPEED_MAX) ++lfo_speed;
+        } else if (joy & J_A) {
+            if (base_pitch_hz < PITCH_MAX_HZ - 5u) base_pitch_hz += 5u;
+            else base_pitch_hz = PITCH_MAX_HZ;
+        } else if (joy & J_B) {
             if (lfo_speed < SPEED_MAX) ++lfo_speed;
         } else if (joy & J_SELECT) {
             if (lfo_depth_hz < DEPTH_MAX_HZ - 5u) lfo_depth_hz += 5u;
@@ -238,7 +245,12 @@ static void update_input(void) {
         }
         ui_dirty = true;
     } else if (joy & J_LEFT) {
-        if (joy & J_B) {
+        if ((joy & J_A) && (joy & J_B)) {
+            if (lfo_speed > SPEED_MIN) --lfo_speed;
+        } else if (joy & J_A) {
+            if (base_pitch_hz > PITCH_MIN_HZ + 5u) base_pitch_hz -= 5u;
+            else base_pitch_hz = PITCH_MIN_HZ;
+        } else if (joy & J_B) {
             if (lfo_speed > SPEED_MIN) --lfo_speed;
         } else if (joy & J_SELECT) {
             if (lfo_depth_hz > DEPTH_MIN_HZ + 5u) lfo_depth_hz -= 5u;
@@ -326,6 +338,25 @@ static void draw_static_ui(void) {
     waveform_init_map();
 }
 
+static void upload_all_lfo_waveform_tiles(void) {
+    set_bkg_data(WAVEFORM_TILE_BASE, WAVEFORM_TILE_COUNT, waveform_tile_data);
+    waveform_upload_index = WAVEFORM_TILE_COUNT;
+}
+
+static void upload_lfo_waveform_tiles_step(void) {
+    uint8_t count;
+
+    if (waveform_upload_index >= WAVEFORM_TILE_COUNT) return;
+
+    count = WAVEFORM_UPLOAD_TILES_PER_FRAME;
+    if ((uint8_t)(WAVEFORM_TILE_COUNT - waveform_upload_index) < count) {
+        count = (uint8_t)(WAVEFORM_TILE_COUNT - waveform_upload_index);
+    }
+
+    set_bkg_data((uint8_t)(WAVEFORM_TILE_BASE + waveform_upload_index), count, &waveform_tile_data[(uint16_t)waveform_upload_index * 16u]);
+    waveform_upload_index = (uint8_t)(waveform_upload_index + count);
+}
+
 static void rebuild_lfo_waveform_cache(void) {
     uint8_t x;
     uint8_t prev_y = waveform_y_for_x(0u);
@@ -341,7 +372,7 @@ static void rebuild_lfo_waveform_cache(void) {
         prev_y = y;
     }
 
-    set_bkg_data(WAVEFORM_TILE_BASE, WAVEFORM_TILE_COUNT, waveform_tile_data);
+    waveform_upload_index = 0u;
     waveform_dirty = false;
 }
 
@@ -368,15 +399,20 @@ static void draw_ui(void) {
 }
 
 void main(void) {
-    DISPLAY_ON;
-    SHOW_BKG;
-    SHOW_SPRITES;
+    DISPLAY_OFF;
     apu_init();
     draw_static_ui();
     rebuild_lfo_waveform_cache();
+    upload_all_lfo_waveform_tiles();
     draw_ui();
+    SHOW_BKG;
+    SHOW_SPRITES;
+    DISPLAY_ON;
 
     while (1) {
+        wait_vbl_done();
+        upload_lfo_waveform_tiles_step();
+
         prev_joy = joy;
         joy = joypad();
 
@@ -392,9 +428,11 @@ void main(void) {
             if (ui_dirty) draw_ui();
         }
 
-        wait_vbl_done();
     }
 }
+
+
+
 
 
 
