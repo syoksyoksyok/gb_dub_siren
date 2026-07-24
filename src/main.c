@@ -184,10 +184,7 @@ static void apu_set_frequency(uint16_t hz, bool trigger) {
 }
 
 static void update_lfo(void) {
-    if (!(joy & J_SELECT)) {
-        lfo_phase = (uint16_t)(lfo_phase + ((uint16_t)lfo_speed * LFO_STEP_SCALE));
-    }
-
+    lfo_phase = (uint16_t)(lfo_phase + ((uint16_t)lfo_speed * LFO_STEP_SCALE));
     lfo_value = (lfo_wave_value(lfo_phase) * (int16_t)lfo_depth_hz) / 110;
 }
 
@@ -212,48 +209,62 @@ static void update_input(void) {
     }
 
     if (joy & J_RIGHT) {
-        switch (selected_param) {
-        case PARAM_WAVE:
-            if (!(prev_joy & J_RIGHT)) {
-                lfo_wave = (lfo_wave_t)((lfo_wave + 1u) % WAVE_COUNT);
-                waveform_dirty = true;
-            }
-            break;
-        case PARAM_PITCH:
-            if (base_pitch_hz < PITCH_MAX_HZ - 5u) base_pitch_hz += 5u;
-            else base_pitch_hz = PITCH_MAX_HZ;
-            break;
-        case PARAM_DEPTH:
+        if (joy & J_B) {
+            if (lfo_speed < SPEED_MAX) ++lfo_speed;
+        } else if (joy & J_SELECT) {
             if (lfo_depth_hz < DEPTH_MAX_HZ - 5u) lfo_depth_hz += 5u;
             else lfo_depth_hz = DEPTH_MAX_HZ;
-            break;
-        case PARAM_SPEED:
-        default:
-            if (lfo_speed < SPEED_MAX) ++lfo_speed;
-            break;
+        } else {
+            switch (selected_param) {
+            case PARAM_WAVE:
+                if (!(prev_joy & J_RIGHT)) {
+                    lfo_wave = (lfo_wave_t)((lfo_wave + 1u) % WAVE_COUNT);
+                    waveform_dirty = true;
+                }
+                break;
+            case PARAM_PITCH:
+                if (base_pitch_hz < PITCH_MAX_HZ - 5u) base_pitch_hz += 5u;
+                else base_pitch_hz = PITCH_MAX_HZ;
+                break;
+            case PARAM_DEPTH:
+                if (lfo_depth_hz < DEPTH_MAX_HZ - 5u) lfo_depth_hz += 5u;
+                else lfo_depth_hz = DEPTH_MAX_HZ;
+                break;
+            case PARAM_SPEED:
+            default:
+                if (lfo_speed < SPEED_MAX) ++lfo_speed;
+                break;
+            }
         }
         ui_dirty = true;
     } else if (joy & J_LEFT) {
-        switch (selected_param) {
-        case PARAM_WAVE:
-            if (!(prev_joy & J_LEFT)) {
-                if (lfo_wave == WAVE_SINE) lfo_wave = WAVE_REV_SAW;
-                else lfo_wave = (lfo_wave_t)(lfo_wave - 1u);
-                waveform_dirty = true;
-            }
-            break;
-        case PARAM_PITCH:
-            if (base_pitch_hz > PITCH_MIN_HZ + 5u) base_pitch_hz -= 5u;
-            else base_pitch_hz = PITCH_MIN_HZ;
-            break;
-        case PARAM_DEPTH:
+        if (joy & J_B) {
+            if (lfo_speed > SPEED_MIN) --lfo_speed;
+        } else if (joy & J_SELECT) {
             if (lfo_depth_hz > DEPTH_MIN_HZ + 5u) lfo_depth_hz -= 5u;
             else lfo_depth_hz = DEPTH_MIN_HZ;
-            break;
-        case PARAM_SPEED:
-        default:
-            if (lfo_speed > SPEED_MIN) --lfo_speed;
-            break;
+        } else {
+            switch (selected_param) {
+            case PARAM_WAVE:
+                if (!(prev_joy & J_LEFT)) {
+                    if (lfo_wave == WAVE_SINE) lfo_wave = WAVE_REV_SAW;
+                    else lfo_wave = (lfo_wave_t)(lfo_wave - 1u);
+                    waveform_dirty = true;
+                }
+                break;
+            case PARAM_PITCH:
+                if (base_pitch_hz > PITCH_MIN_HZ + 5u) base_pitch_hz -= 5u;
+                else base_pitch_hz = PITCH_MIN_HZ;
+                break;
+            case PARAM_DEPTH:
+                if (lfo_depth_hz > DEPTH_MIN_HZ + 5u) lfo_depth_hz -= 5u;
+                else lfo_depth_hz = DEPTH_MIN_HZ;
+                break;
+            case PARAM_SPEED:
+            default:
+                if (lfo_speed > SPEED_MIN) --lfo_speed;
+                break;
+            }
         }
         ui_dirty = true;
     }
@@ -386,6 +397,8 @@ void main(void) {
         wait_vbl_done();
     }
 }
+
+
 
 
 
