@@ -316,7 +316,7 @@ static void draw_help_ui(void) {
     put_text(8u, 0u, "HELP");
     put_text(0u, 2u, "A HOLD SOUND");
     put_text(0u, 4u, "^ v CHANGE WAVE");
-    put_text(0u, 6u, "A/B + < > EDIT");
+    put_text(0u, 6u, "< > WITH A OR B");
     put_text(0u, 8u, "ST + SE HELP");
     put_text(0u, 10u, "A + < > PITCH");
     put_text(0u, 12u, "B + < > RATE");
@@ -331,7 +331,7 @@ static void draw_static_ui(void) {
     put_text(0u, 6u, "DEPTH");
     put_text(0u, 8u, "RATE ");
     put_text(0u, 10u, "LFO WAVE");
-    put_text(0u, 17u, "UD WAVE ST/SE DP");
+    put_text(0u, 17u, "^ v WAVE ST/SE DP");
     waveform_init_map();
 }
 
