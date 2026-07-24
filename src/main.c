@@ -67,7 +67,7 @@ static uint8_t lfo_speed = 19u;
 static uint16_t lfo_phase = 0u;
 static int16_t lfo_value = 0;
 static lfo_wave_t lfo_wave = WAVE_SQUARE;
-static param_t selected_param = PARAM_DEPTH;
+static param_t selected_param = PARAM_WAVE;
 
 static uint8_t joy = 0u;
 static uint8_t prev_joy = 0u;
@@ -213,11 +213,9 @@ static void update_lfo(void) {
 }
 
 static void update_input(void) {
-    bool start_pressed = ((joy & J_START) && !(prev_joy & J_START));
-    bool select_pressed = ((joy & J_SELECT) && !(prev_joy & J_SELECT));
     uint16_t old_lfo_depth_hz = lfo_depth_hz;
 
-    if (select_pressed && !(joy & (J_LEFT | J_RIGHT))) {
+    if ((joy & J_START) && (joy & J_SELECT) && !((prev_joy & J_START) && (prev_joy & J_SELECT))) {
         help_visible = !help_visible;
         if (help_visible) {
             draw_help_ui();
@@ -231,10 +229,18 @@ static void update_input(void) {
 
     if (help_visible) return;
 
-    if (start_pressed) {
-        lfo_wave = (lfo_wave_t)((lfo_wave + 1u) % WAVE_COUNT);
-        request_waveform_rebuild(0u);
+    if ((joy & J_START) && !(joy & J_SELECT)) {
+        if (lfo_depth_hz < DEPTH_MAX_HZ - DEPTH_STEP_HZ) lfo_depth_hz += DEPTH_STEP_HZ;
+        else lfo_depth_hz = DEPTH_MAX_HZ;
         ui_dirty = true;
+        if (old_lfo_depth_hz != lfo_depth_hz) request_waveform_rebuild(WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES);
+        return;
+    } else if ((joy & J_SELECT) && !(joy & J_START)) {
+        if (lfo_depth_hz > DEPTH_MIN_HZ + DEPTH_STEP_HZ) lfo_depth_hz -= DEPTH_STEP_HZ;
+        else lfo_depth_hz = DEPTH_MIN_HZ;
+        ui_dirty = true;
+        if (old_lfo_depth_hz != lfo_depth_hz) request_waveform_rebuild(WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES);
+        return;
     }
 
     if ((joy & J_UP) && !(prev_joy & J_UP)) {
@@ -256,9 +262,7 @@ static void update_input(void) {
             else base_pitch_hz = PITCH_MAX_HZ;
         } else if (joy & J_B) {
             if (lfo_speed < SPEED_MAX) ++lfo_speed;
-        } else if (joy & J_SELECT) {
-            if (lfo_depth_hz < DEPTH_MAX_HZ - DEPTH_STEP_HZ) lfo_depth_hz += DEPTH_STEP_HZ;
-            else lfo_depth_hz = DEPTH_MAX_HZ;
+
         } else {
             switch (selected_param) {
             case PARAM_WAVE:
@@ -290,9 +294,7 @@ static void update_input(void) {
             else base_pitch_hz = PITCH_MIN_HZ;
         } else if (joy & J_B) {
             if (lfo_speed > SPEED_MIN) --lfo_speed;
-        } else if (joy & J_SELECT) {
-            if (lfo_depth_hz > DEPTH_MIN_HZ + DEPTH_STEP_HZ) lfo_depth_hz -= DEPTH_STEP_HZ;
-            else lfo_depth_hz = DEPTH_MIN_HZ;
+
         } else {
             switch (selected_param) {
             case PARAM_WAVE:
@@ -366,13 +368,13 @@ static void draw_help_ui(void) {
     move_sprite(0u, 0u, 0u);
     put_text(8u, 0u, "HELP");
     put_text(0u, 2u, "A HOLD SOUND");
-    put_text(0u, 4u, "UD SELECT PARAM");
-    put_text(0u, 6u, "LR EDIT VALUE");
-    put_text(0u, 8u, "START WAVE");
-    put_text(0u, 10u, "A+LR PITCH");
-    put_text(0u, 12u, "B+LR RATE");
-    put_text(0u, 14u, "SEL+LR DEPTH");
-    put_text(0u, 17u, "SELECT CLOSE");
+    put_text(0u, 4u, "^ v SELECT PARAM");
+    put_text(0u, 6u, "< > EDIT VALUE");
+    put_text(0u, 8u, "ST + SE HELP");
+    put_text(0u, 10u, "A + < > PITCH");
+    put_text(0u, 12u, "B + < > RATE");
+    put_text(0u, 14u, "SEL / ST DEPTH");
+    put_text(0u, 17u, "ST + SE CLOSE");
 }
 static void draw_static_ui(void) {
     cls();
