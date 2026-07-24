@@ -24,19 +24,19 @@ build/gb_dub_siren.gb
 
 ## 操作対応表
 
-パラメータ選択方式を採用しています。上下キーで WAVE / PITCH / DEPTH / RATE の調整対象を選び、左右キーで選択中の値を変更します。
+方向キーとボタンの組み合わせで各パラメータを直接変更します。上下キーでLFO波形を変更し、A + Left / Right でPITCH、B + Left / Right でRATE、Select / Start でDEPTHを変更します。
 
 | 元の操作子 | Game Boy割り当て | 実装挙動 |
 |---|---|---|
 | ゲート | A | 押している間だけ発音。A + Left / Right で発音しながら PITCH 調整 |
 | キル | なし | Game Boy版では未使用 |
 | LFO一時停止 | なし | Game Boy版では未使用 |
-| 波形切替 | WAVE 選択中の Left / Right | WAVE選択中の左右キーでLFO波形切替 |
-| POT1 ピッチ | PITCH選択中のLeft / Right、またはA + Left / Right | ベースピッチを増減 |
-| POT2 LFO深さ | DEPTH選択中のLeft / Right、Select、Start | Selectで減少、Startで増加。DEPTH選択中はLeft/Rightでも増減 |
-| POT3 LFO速度 | RATE選択中のLeft / Right、B + Left / Right、またはA + B + Left / Right | LFO RATEを増減 |
+| 波形切替 | Up / Down | 上下キーでLFO波形切替 |
+| POT1 ピッチ | A + Left / Right | ベースピッチを増減 |
+| POT2 LFO深さ | Select、Start | Selectで減少、Startで増加 |
+| POT3 LFO速度 | B + Left / Right、またはA + B + Left / Right | LFO RATEを増減 |
 
-画面上の `>` が現在選択中の項目です。WAVE を選択して Left / Right を押すと LFO 波形を変更できます。A ボタンは Left / Right と組み合わせると発音しながら PITCH を直接変更できます。B ボタンは Left / Right と組み合わせると LFO RATE を直接変更できます。A+B+Left/Right では発音しながら LFO RATE を変更できます。Start+Select 同時押しでHELPを表示し、Select単押しで LFO DEPTH を下げ、Start単押しで LFO DEPTH を上げます。LFO WAVE 欄には背景タイルで描いた160x48px相当の波形を表示し、現在位置をスプライトマーカーで示します。
+上下キーで LFO 波形を変更できます。A ボタンは Left / Right と組み合わせると発音しながら PITCH を直接変更できます。B ボタンは Left / Right と組み合わせると LFO RATE を直接変更できます。A+B+Left/Right では発音しながら LFO RATE を変更できます。Start+Select 同時押しでHELPを表示し、Select単押しで LFO DEPTH を下げ、Start単押しで LFO DEPTH を上げます。LFO WAVE 欄には背景タイルで描いた160x48px相当の波形を表示し、現在位置をスプライトマーカーで示します。
 
 ## 仕様メモ
 
@@ -62,7 +62,7 @@ build/gb_dub_siren.gb
 ## 既知の制限
 
 - 発音中のCH1音量は最大15/15、マスター音量は最大7/7に設定しています。
-- 元のアナログポットと異なり、パラメータは方向キーで段階的に変更します。起動時はSQUARE波形、カーソルはWAVE、PITCHは440Hz、DEPTHは400Hz、LFO RATEは 1〜80 の 19 です。LFO RATE の範囲は約0.159Hz〜約12.73Hzです。Start+Select 同時押しでHELPを表示できます。
+- 元のアナログポットと異なり、パラメータは方向キーで段階的に変更します。起動時はSQUARE波形、PITCHは440Hz、DEPTHは400Hz、LFO RATEは 1〜80 の 19 です。LFO RATE の範囲は約0.159Hz〜約12.73Hzです。Start+Select 同時押しでHELPを表示できます。
 - サイン波は軽量化のため 64 値クォーター波形をミラーして 256 ステップ化しています。
 - 実機/エミュレータの APU 差により、音量フェードや再トリガの聴こえ方が多少変わります。
 

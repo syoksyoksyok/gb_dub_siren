@@ -40,14 +40,6 @@ typedef enum {
     WAVE_COUNT
 } lfo_wave_t;
 
-typedef enum {
-    PARAM_WAVE = 0,
-    PARAM_PITCH,
-    PARAM_DEPTH,
-    PARAM_SPEED,
-    PARAM_COUNT
-} param_t;
-
 
 static const uint8_t marker_tile[16] = {
     0x18u, 0x18u, 0x3cu, 0x3cu, 0x7eu, 0x7eu, 0xffu, 0xffu,
@@ -67,7 +59,6 @@ static uint8_t lfo_speed = 19u;
 static uint16_t lfo_phase = 0u;
 static int16_t lfo_value = 0;
 static lfo_wave_t lfo_wave = WAVE_SQUARE;
-static param_t selected_param = PARAM_WAVE;
 
 static uint8_t joy = 0u;
 static uint8_t prev_joy = 0u;
@@ -244,13 +235,15 @@ static void update_input(void) {
     }
 
     if ((joy & J_UP) && !(prev_joy & J_UP)) {
-        if (selected_param == PARAM_WAVE) selected_param = (param_t)(PARAM_COUNT - 1u);
-        else selected_param = (param_t)(selected_param - 1u);
+        if (lfo_wave == WAVE_SINE) lfo_wave = WAVE_REV_SAW;
+        else lfo_wave = (lfo_wave_t)(lfo_wave - 1u);
+        request_waveform_rebuild(0u);
         ui_dirty = true;
     }
 
     if ((joy & J_DOWN) && !(prev_joy & J_DOWN)) {
-        selected_param = (param_t)((selected_param + 1u) % PARAM_COUNT);
+        lfo_wave = (lfo_wave_t)((lfo_wave + 1u) % WAVE_COUNT);
+        request_waveform_rebuild(0u);
         ui_dirty = true;
     }
 
@@ -262,28 +255,6 @@ static void update_input(void) {
             else base_pitch_hz = PITCH_MAX_HZ;
         } else if (joy & J_B) {
             if (lfo_speed < SPEED_MAX) ++lfo_speed;
-
-        } else {
-            switch (selected_param) {
-            case PARAM_WAVE:
-                if (!(prev_joy & J_RIGHT)) {
-                    lfo_wave = (lfo_wave_t)((lfo_wave + 1u) % WAVE_COUNT);
-                    request_waveform_rebuild(0u);
-                }
-                break;
-            case PARAM_PITCH:
-                if (base_pitch_hz < PITCH_MAX_HZ - PITCH_STEP_HZ) base_pitch_hz += PITCH_STEP_HZ;
-                else base_pitch_hz = PITCH_MAX_HZ;
-                break;
-            case PARAM_DEPTH:
-                if (lfo_depth_hz < DEPTH_MAX_HZ - DEPTH_STEP_HZ) lfo_depth_hz += DEPTH_STEP_HZ;
-                else lfo_depth_hz = DEPTH_MAX_HZ;
-                break;
-            case PARAM_SPEED:
-            default:
-                if (lfo_speed < SPEED_MAX) ++lfo_speed;
-                break;
-            }
         }
         ui_dirty = true;
     } else if (joy & J_LEFT) {
@@ -294,29 +265,6 @@ static void update_input(void) {
             else base_pitch_hz = PITCH_MIN_HZ;
         } else if (joy & J_B) {
             if (lfo_speed > SPEED_MIN) --lfo_speed;
-
-        } else {
-            switch (selected_param) {
-            case PARAM_WAVE:
-                if (!(prev_joy & J_LEFT)) {
-                    if (lfo_wave == WAVE_SINE) lfo_wave = WAVE_REV_SAW;
-                    else lfo_wave = (lfo_wave_t)(lfo_wave - 1u);
-                    request_waveform_rebuild(0u);
-                }
-                break;
-            case PARAM_PITCH:
-                if (base_pitch_hz > PITCH_MIN_HZ + PITCH_STEP_HZ) base_pitch_hz -= PITCH_STEP_HZ;
-                else base_pitch_hz = PITCH_MIN_HZ;
-                break;
-            case PARAM_DEPTH:
-                if (lfo_depth_hz > DEPTH_MIN_HZ + DEPTH_STEP_HZ) lfo_depth_hz -= DEPTH_STEP_HZ;
-                else lfo_depth_hz = DEPTH_MIN_HZ;
-                break;
-            case PARAM_SPEED:
-            default:
-                if (lfo_speed > SPEED_MIN) --lfo_speed;
-                break;
-            }
         }
         ui_dirty = true;
     }
@@ -325,7 +273,6 @@ static void update_input(void) {
         request_waveform_rebuild(WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES);
     }
 }
-
 static void update_sound(void) {
     bool old_sound_active = sound_active;
     int16_t hz = (int16_t)base_pitch_hz + lfo_value;
@@ -368,8 +315,8 @@ static void draw_help_ui(void) {
     move_sprite(0u, 0u, 0u);
     put_text(8u, 0u, "HELP");
     put_text(0u, 2u, "A HOLD SOUND");
-    put_text(0u, 4u, "^ v SELECT PARAM");
-    put_text(0u, 6u, "< > EDIT VALUE");
+    put_text(0u, 4u, "^ v CHANGE WAVE");
+    put_text(0u, 6u, "A/B + < > EDIT");
     put_text(0u, 8u, "ST + SE HELP");
     put_text(0u, 10u, "A + < > PITCH");
     put_text(0u, 12u, "B + < > RATE");
@@ -384,7 +331,7 @@ static void draw_static_ui(void) {
     put_text(0u, 6u, "DEPTH");
     put_text(0u, 8u, "RATE ");
     put_text(0u, 10u, "LFO WAVE");
-    put_text(0u, 17u, "UD SEL LR EDIT");
+    put_text(0u, 17u, "UD WAVE ST/SE DP");
     waveform_init_map();
 }
 
@@ -434,20 +381,14 @@ static void draw_lfo_marker(void) {
 }
 
 static void draw_ui(void) {
-    put_text(5u, 2u, selected_param == PARAM_WAVE ? ">" : " ");
     put_text(6u, 2u, wave_names[lfo_wave]);
 
-    put_text(6u, 4u, selected_param == PARAM_PITCH ? ">" : " ");
     draw_slider(7u, 4u, base_pitch_hz, PITCH_MIN_HZ, PITCH_MAX_HZ);
-    put_text(6u, 6u, selected_param == PARAM_DEPTH ? ">" : " ");
     draw_slider(7u, 6u, lfo_depth_hz, DEPTH_MIN_HZ, DEPTH_MAX_HZ);
-
-    put_text(6u, 8u, selected_param == PARAM_SPEED ? ">" : " ");
     draw_slider(7u, 8u, lfo_speed, SPEED_MIN, SPEED_MAX);
 
     ui_dirty = false;
 }
-
 void main(void) {
     DISPLAY_OFF;
     apu_init();
