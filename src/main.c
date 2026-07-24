@@ -18,6 +18,7 @@
 #define WAVEFORM_UPLOAD_TILES_PER_FRAME 4u
 
 #define UI_REFRESH_FRAMES 6u
+#define WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES 10u
 #define LFO_STEP_SCALE 174u
 
 #define PITCH_MIN_HZ 130u
@@ -65,8 +66,8 @@ static uint16_t lfo_depth_hz = 300u;
 static uint8_t lfo_speed = 19u;
 static uint16_t lfo_phase = 0u;
 static int16_t lfo_value = 0;
-static lfo_wave_t lfo_wave = WAVE_SINE;
-static param_t selected_param = PARAM_PITCH;
+static lfo_wave_t lfo_wave = WAVE_SQUARE;
+static param_t selected_param = PARAM_DEPTH;
 
 static uint8_t joy = 0u;
 static uint8_t prev_joy = 0u;
@@ -78,6 +79,7 @@ static uint8_t volume = 0u;
 static uint8_t ui_tick = 0u;
 static bool ui_dirty = true;
 static bool waveform_dirty = true;
+static uint8_t waveform_redraw_delay = 0u;
 static uint8_t waveform_tile_data[WAVEFORM_TILE_COUNT * 16u];
 static uint8_t waveform_tile_map[WAVEFORM_TILE_COUNT];
 static uint8_t waveform_y_pixels[WAVEFORM_PIXEL_W];
@@ -134,6 +136,12 @@ static uint8_t waveform_y_for_x(uint8_t x) {
     if (scaled_y < 0) return 0u;
     if (scaled_y >= (int16_t)WAVEFORM_PIXEL_H) return (uint8_t)(WAVEFORM_PIXEL_H - 1u);
     return (uint8_t)scaled_y;
+}
+
+static void request_waveform_rebuild(uint8_t delay) {
+    waveform_dirty = true;
+    waveform_redraw_delay = delay;
+    waveform_upload_index = WAVEFORM_TILE_COUNT;
 }
 
 static void waveform_set_pixel(uint8_t x, uint8_t y) {
@@ -204,7 +212,7 @@ static void update_input(void) {
 
     if (start_pressed) {
         lfo_wave = (lfo_wave_t)((lfo_wave + 1u) % WAVE_COUNT);
-        waveform_dirty = true;
+        request_waveform_rebuild(0u);
         ui_dirty = true;
     }
 
@@ -235,7 +243,7 @@ static void update_input(void) {
             case PARAM_WAVE:
                 if (!(prev_joy & J_RIGHT)) {
                     lfo_wave = (lfo_wave_t)((lfo_wave + 1u) % WAVE_COUNT);
-                    waveform_dirty = true;
+                    request_waveform_rebuild(0u);
                 }
                 break;
             case PARAM_PITCH:
@@ -270,7 +278,7 @@ static void update_input(void) {
                 if (!(prev_joy & J_LEFT)) {
                     if (lfo_wave == WAVE_SINE) lfo_wave = WAVE_REV_SAW;
                     else lfo_wave = (lfo_wave_t)(lfo_wave - 1u);
-                    waveform_dirty = true;
+                    request_waveform_rebuild(0u);
                 }
                 break;
             case PARAM_PITCH:
@@ -291,7 +299,7 @@ static void update_input(void) {
     }
 
     if (old_lfo_depth_hz != lfo_depth_hz) {
-        waveform_dirty = true;
+        request_waveform_rebuild(WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES);
     }
 }
 
@@ -426,8 +434,12 @@ void main(void) {
         update_lfo();
         update_sound();
 
-        if (waveform_dirty) rebuild_lfo_waveform_cache();
         draw_lfo_marker();
+
+        if (waveform_dirty) {
+            if (waveform_redraw_delay > 0u) --waveform_redraw_delay;
+            else rebuild_lfo_waveform_cache();
+        }
 
         if (++ui_tick >= UI_REFRESH_FRAMES) {
             ui_tick = 0u;
