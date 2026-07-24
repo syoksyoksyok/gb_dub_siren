@@ -24,7 +24,7 @@ build/gb_dub_siren.gb
 
 ## 操作対応表
 
-パラメータ選択方式を採用しています。上下キーで WAVE / PITCH / DEPTH / SPEED の調整対象を選び、左右キーで選択中の値を変更します。
+パラメータ選択方式を採用しています。上下キーで WAVE / PITCH / DEPTH / RATE の調整対象を選び、左右キーで選択中の値を変更します。
 
 | 元の操作子 | Game Boy割り当て | 実装挙動 |
 |---|---|---|
@@ -34,9 +34,9 @@ build/gb_dub_siren.gb
 | 波形切替 | Start、または WAVE 選択中の Left / Right | Start、またはWAVE選択中の左右キーでLFO波形切替 |
 | POT1 ピッチ | PITCH選択中のLeft / Right、またはA + Left / Right | ベースピッチを増減 |
 | POT2 LFO深さ | DEPTH選択中のLeft / Right、またはSelect + Left / Right | LFO 深さを増減 |
-| POT3 LFO速度 | SPEED選択中のLeft / Right、B + Left / Right、またはA + B + Left / Right | LFO 速度を増減 |
+| POT3 LFO速度 | RATE選択中のLeft / Right、B + Left / Right、またはA + B + Left / Right | LFO RATEを増減 |
 
-画面上の `>` が現在選択中の項目です。WAVE を選択して Left / Right を押すと LFO 波形を変更できます。A ボタンは Left / Right と組み合わせると発音しながら PITCH を直接変更できます。B ボタンは Left / Right と組み合わせると LFO SPEED を直接変更できます。A+B+Left/Right では発音しながら LFO SPEED を変更できます。Select ボタンは Left / Right と組み合わせると LFO DEPTH を直接変更できます。LFO WAVE 欄には背景タイルで描いた160x48px相当の波形を表示し、現在位置をスプライトマーカーで示します。
+画面上の `>` が現在選択中の項目です。WAVE を選択して Left / Right を押すと LFO 波形を変更できます。A ボタンは Left / Right と組み合わせると発音しながら PITCH を直接変更できます。B ボタンは Left / Right と組み合わせると LFO RATE を直接変更できます。A+B+Left/Right では発音しながら LFO RATE を変更できます。Select ボタンは Left / Right と組み合わせると LFO DEPTH を直接変更できます。LFO WAVE 欄には背景タイルで描いた160x48px相当の波形を表示し、現在位置をスプライトマーカーで示します。
 
 ## 仕様メモ
 
@@ -44,7 +44,7 @@ build/gb_dub_siren.gb
 - `NR10`-`NR14` と `NR50`-`NR52` を使用します。
 - 周波数は `131072 / (2048 - freq)` Hz の関係から 11bit レジスタ値へ変換します。
 - LFO は固定テーブル化した 256 ステップ値を使い、SINE / SQUARE / SAW / REV SAW を実装しています。SINE / SAW / REV SAW は16bit位相の補間で滑らかにしています。
-- 発音開始/終了は NR12 の上位ニブルを数フレームごとに変更して簡易フェードします。
+- 発音中は NR12 の上位ニブルを最大値に設定します。
 - B ボタンによるキル機能は削除しています。
 
 ## 性能改善メモ
@@ -61,8 +61,8 @@ build/gb_dub_siren.gb
 
 ## 既知の制限
 
-- Arduino 版の Timer1 ISR による 128 段階フェードとは完全一致ではなく、Game Boy APU に合わせた 16 段階音量フェードです。CH1音量は最大15/15まで上げています。
-- 元のアナログポットと異なり、パラメータは方向キーで段階的に変更します。LFO SPEED の初期値は 1〜32 の約6割にあたる 19 です。Select 単体には機能を割り当てていません。
+- 発音中のCH1音量は最大15/15、マスター音量は最大7/7に設定しています。
+- 元のアナログポットと異なり、パラメータは方向キーで段階的に変更します。LFO RATE の範囲は約0.159Hz〜約12.73Hzです。初期値は 1〜80 の 19 です。Select 単体には機能を割り当てていません。
 - サイン波は軽量化のため 64 値クォーター波形をミラーして 256 ステップ化しています。
 - 実機/エミュレータの APU 差により、音量フェードや再トリガの聴こえ方が多少変わります。
 

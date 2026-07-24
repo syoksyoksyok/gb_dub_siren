@@ -17,14 +17,14 @@
 #define WAVEFORM_UPLOAD_TILES_PER_FRAME 4u
 
 #define UI_REFRESH_FRAMES 6u
-#define LFO_STEP_SCALE 96u
+#define LFO_STEP_SCALE 174u
 
 #define PITCH_MIN_HZ 130u
 #define PITCH_MAX_HZ 2100u
 #define DEPTH_MIN_HZ 0u
 #define DEPTH_MAX_HZ 600u
 #define SPEED_MIN 1u
-#define SPEED_MAX 32u
+#define SPEED_MAX 80u
 
 #define VOL_MAX 15u
 
@@ -72,7 +72,6 @@ static bool desired_sound = false;
 static bool sound_active = false;
 static bool channel_triggered = false;
 static uint8_t volume = 0u;
-static uint8_t fade_tick = 0u;
 static uint8_t ui_tick = 0u;
 static bool ui_dirty = true;
 static bool waveform_dirty = true;
@@ -291,15 +290,8 @@ static void update_sound(void) {
     if (hz < (int16_t)PITCH_MIN_HZ) hz = PITCH_MIN_HZ;
     if (hz > (int16_t)PITCH_MAX_HZ + (int16_t)DEPTH_MAX_HZ) hz = PITCH_MAX_HZ + DEPTH_MAX_HZ;
 
-    if (++fade_tick >= 2u) {
-        fade_tick = 0u;
-        if (desired_sound) {
-            if (volume < VOL_MAX) ++volume;
-        } else if (volume > 0u) {
-            --volume;
-        }
-        apu_set_volume(volume);
-    }
+    volume = desired_sound ? VOL_MAX : 0u;
+    apu_set_volume(volume);
 
     if (desired_sound && !channel_triggered && volume > 0u) {
         apu_set_frequency((uint16_t)hz, true);
@@ -332,7 +324,7 @@ static void draw_static_ui(void) {
     put_text(0u, 2u, "WAVE:");
     put_text(0u, 4u, "PITCH");
     put_text(0u, 6u, "DEPTH");
-    put_text(0u, 8u, "SPEED");
+    put_text(0u, 8u, "RATE ");
     put_text(0u, 10u, "LFO WAVE");
     put_text(0u, 17u, "UD SEL LR EDIT");
     waveform_init_map();
