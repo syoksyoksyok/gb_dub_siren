@@ -23,6 +23,8 @@
 #define PITCH_MAX_HZ 2100u
 #define DEPTH_MIN_HZ 0u
 #define DEPTH_MAX_HZ 600u
+#define PITCH_STEP_HZ 25u
+#define DEPTH_STEP_HZ 5u
 #define SPEED_MIN 1u
 #define SPEED_MAX 80u
 
@@ -58,7 +60,7 @@ static const char * const wave_names[WAVE_COUNT] = {
 };
 
 static uint16_t base_pitch_hz = 440u;
-static uint16_t lfo_depth_hz = 180u;
+static uint16_t lfo_depth_hz = 300u;
 static uint8_t lfo_speed = 19u;
 static uint16_t lfo_phase = 0u;
 static int16_t lfo_value = 0;
@@ -213,12 +215,12 @@ static void update_input(void) {
         if ((joy & J_A) && (joy & J_B)) {
             if (lfo_speed < SPEED_MAX) ++lfo_speed;
         } else if (joy & J_A) {
-            if (base_pitch_hz < PITCH_MAX_HZ - 5u) base_pitch_hz += 5u;
+            if (base_pitch_hz < PITCH_MAX_HZ - PITCH_STEP_HZ) base_pitch_hz += PITCH_STEP_HZ;
             else base_pitch_hz = PITCH_MAX_HZ;
         } else if (joy & J_B) {
             if (lfo_speed < SPEED_MAX) ++lfo_speed;
         } else if (joy & J_SELECT) {
-            if (lfo_depth_hz < DEPTH_MAX_HZ - 5u) lfo_depth_hz += 5u;
+            if (lfo_depth_hz < DEPTH_MAX_HZ - DEPTH_STEP_HZ) lfo_depth_hz += DEPTH_STEP_HZ;
             else lfo_depth_hz = DEPTH_MAX_HZ;
         } else {
             switch (selected_param) {
@@ -229,11 +231,11 @@ static void update_input(void) {
                 }
                 break;
             case PARAM_PITCH:
-                if (base_pitch_hz < PITCH_MAX_HZ - 5u) base_pitch_hz += 5u;
+                if (base_pitch_hz < PITCH_MAX_HZ - PITCH_STEP_HZ) base_pitch_hz += PITCH_STEP_HZ;
                 else base_pitch_hz = PITCH_MAX_HZ;
                 break;
             case PARAM_DEPTH:
-                if (lfo_depth_hz < DEPTH_MAX_HZ - 5u) lfo_depth_hz += 5u;
+                if (lfo_depth_hz < DEPTH_MAX_HZ - DEPTH_STEP_HZ) lfo_depth_hz += DEPTH_STEP_HZ;
                 else lfo_depth_hz = DEPTH_MAX_HZ;
                 break;
             case PARAM_SPEED:
@@ -247,12 +249,12 @@ static void update_input(void) {
         if ((joy & J_A) && (joy & J_B)) {
             if (lfo_speed > SPEED_MIN) --lfo_speed;
         } else if (joy & J_A) {
-            if (base_pitch_hz > PITCH_MIN_HZ + 5u) base_pitch_hz -= 5u;
+            if (base_pitch_hz > PITCH_MIN_HZ + PITCH_STEP_HZ) base_pitch_hz -= PITCH_STEP_HZ;
             else base_pitch_hz = PITCH_MIN_HZ;
         } else if (joy & J_B) {
             if (lfo_speed > SPEED_MIN) --lfo_speed;
         } else if (joy & J_SELECT) {
-            if (lfo_depth_hz > DEPTH_MIN_HZ + 5u) lfo_depth_hz -= 5u;
+            if (lfo_depth_hz > DEPTH_MIN_HZ + DEPTH_STEP_HZ) lfo_depth_hz -= DEPTH_STEP_HZ;
             else lfo_depth_hz = DEPTH_MIN_HZ;
         } else {
             switch (selected_param) {
@@ -264,11 +266,11 @@ static void update_input(void) {
                 }
                 break;
             case PARAM_PITCH:
-                if (base_pitch_hz > PITCH_MIN_HZ + 5u) base_pitch_hz -= 5u;
+                if (base_pitch_hz > PITCH_MIN_HZ + PITCH_STEP_HZ) base_pitch_hz -= PITCH_STEP_HZ;
                 else base_pitch_hz = PITCH_MIN_HZ;
                 break;
             case PARAM_DEPTH:
-                if (lfo_depth_hz > DEPTH_MIN_HZ + 5u) lfo_depth_hz -= 5u;
+                if (lfo_depth_hz > DEPTH_MIN_HZ + DEPTH_STEP_HZ) lfo_depth_hz -= DEPTH_STEP_HZ;
                 else lfo_depth_hz = DEPTH_MIN_HZ;
                 break;
             case PARAM_SPEED:
