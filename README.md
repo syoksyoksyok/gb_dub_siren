@@ -1,6 +1,10 @@
-# Game Boy Dub Siren
+# Syok Dub Siren GB
 
-GBDK-2020 で作成した DMG Game Boy 向けダブサイレン ROM です。
+Version: 1.0.0
+
+GBDK-2020 で作成した DMG Game Boy 向けダブサイレン homebrew ROM です。
+
+このプロジェクトは非公式の自作ソフトウェアであり、Nintendo Co., Ltd. とは関係ありません。Game Boy は Nintendo の商標です。
 
 ## Build
 
@@ -19,7 +23,7 @@ make GBDK_HOME=/path/to/gbdk
 出力 ROM:
 
 ```text
-build/gb_dub_siren.gb
+build/syok-dub-siren-gb.gb
 ```
 
 ## 操作対応表
@@ -66,13 +70,6 @@ build/gb_dub_siren.gb
 - サイン波は軽量化のため 64 値クォーター波形をミラーして 256 ステップ化しています。
 - 実機/エミュレータの APU 差により、音量フェードや再トリガの聴こえ方が多少変わります。
 
+## License
 
-
-
-
-
-
-
-
-
-
+MIT License. See [LICENSE](LICENSE).

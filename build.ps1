@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $BuildDir = Join-Path $ProjectRoot "build"
 $Lcc = "C:\Dev_tools\gbdk\bin\lcc.exe"
-$Output = Join-Path $BuildDir "gb_dub_siren.gb"
+$Output = Join-Path $BuildDir "syok-dub-siren-gb.gb"
 
 if (-not (Test-Path -LiteralPath $Lcc)) {
     throw "GBDK compiler not found: $Lcc"

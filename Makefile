@@ -1,4 +1,4 @@
-PROJECT := gb_dub_siren
+PROJECT := syok-dub-siren-gb
 BUILD := build
 SRC := src/main.c
 

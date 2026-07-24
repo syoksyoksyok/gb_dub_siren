@@ -1,6 +1,6 @@
 build/*
 !build/
-!build/gb_dub_siren.gb
+!build/syok-dub-siren-gb.gb
 *.ihx
 *.lk
 *.lst
