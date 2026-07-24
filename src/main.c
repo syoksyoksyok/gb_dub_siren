@@ -78,12 +78,18 @@ static bool channel_triggered = false;
 static uint8_t volume = 0u;
 static uint8_t ui_tick = 0u;
 static bool ui_dirty = true;
+static bool help_visible = false;
 static bool waveform_dirty = true;
 static uint8_t waveform_redraw_delay = 0u;
 static uint8_t waveform_tile_data[WAVEFORM_TILE_COUNT * 16u];
 static uint8_t waveform_tile_map[WAVEFORM_TILE_COUNT];
 static uint8_t waveform_y_pixels[WAVEFORM_PIXEL_W];
 static uint8_t waveform_upload_index = WAVEFORM_TILE_COUNT;
+
+static void draw_help_ui(void);
+static void draw_static_ui(void);
+static void draw_ui(void);
+static void upload_all_lfo_waveform_tiles(void);
 
 static void put_text(uint8_t x, uint8_t y, const char *text) {
     gotoxy(x, y);
@@ -208,7 +214,22 @@ static void update_lfo(void) {
 
 static void update_input(void) {
     bool start_pressed = ((joy & J_START) && !(prev_joy & J_START));
+    bool select_pressed = ((joy & J_SELECT) && !(prev_joy & J_SELECT));
     uint16_t old_lfo_depth_hz = lfo_depth_hz;
+
+    if (select_pressed && !(joy & (J_LEFT | J_RIGHT))) {
+        help_visible = !help_visible;
+        if (help_visible) {
+            draw_help_ui();
+        } else {
+            draw_static_ui();
+            upload_all_lfo_waveform_tiles();
+            draw_ui();
+        }
+        return;
+    }
+
+    if (help_visible) return;
 
     if (start_pressed) {
         lfo_wave = (lfo_wave_t)((lfo_wave + 1u) % WAVE_COUNT);
@@ -340,6 +361,19 @@ static void waveform_init_map(void) {
     set_sprite_tile(0u, 0u);
 }
 
+static void draw_help_ui(void) {
+    cls();
+    move_sprite(0u, 0u, 0u);
+    put_text(8u, 0u, "HELP");
+    put_text(0u, 2u, "A HOLD SOUND");
+    put_text(0u, 4u, "UD SELECT PARAM");
+    put_text(0u, 6u, "LR EDIT VALUE");
+    put_text(0u, 8u, "START WAVE");
+    put_text(0u, 10u, "A+LR PITCH");
+    put_text(0u, 12u, "B+LR RATE");
+    put_text(0u, 14u, "SEL+LR DEPTH");
+    put_text(0u, 17u, "SELECT CLOSE");
+}
 static void draw_static_ui(void) {
     cls();
     put_text(2u, 0u, "GB DUB SIREN");
@@ -433,6 +467,8 @@ void main(void) {
         update_input();
         update_lfo();
         update_sound();
+
+        if (help_visible) continue;
 
         draw_lfo_marker();
 
