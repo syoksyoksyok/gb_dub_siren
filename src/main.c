@@ -62,7 +62,7 @@ static const char * const wave_names[WAVE_COUNT] = {
 };
 
 static uint16_t base_pitch_hz = 440u;
-static uint16_t lfo_depth_hz = 300u;
+static uint16_t lfo_depth_hz = 400u;
 static uint8_t lfo_speed = 19u;
 static uint16_t lfo_phase = 0u;
 static int16_t lfo_value = 0;
