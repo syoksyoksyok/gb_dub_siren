@@ -23,6 +23,7 @@
 #define WAVEFORM_FRAME_BOTTOM_Y (WAVEFORM_START_Y + WAVEFORM_ROWS)
 #define WAVEFORM_TILE_BASE 128u
 #define WAVEFORM_TILE_COUNT (WAVEFORM_COLS * WAVEFORM_ROWS)
+#define SLIDER_KNOB_TILE (WAVEFORM_TILE_BASE + WAVEFORM_TILE_COUNT)
 #define WAVEFORM_FRAME_TILE_BASE 248u
 #define WAVEFORM_FRAME_TOP_LEFT_TILE WAVEFORM_FRAME_TILE_BASE
 #define WAVEFORM_FRAME_TOP_RIGHT_TILE (WAVEFORM_FRAME_TILE_BASE + 1u)
@@ -94,6 +95,11 @@ static const uint8_t waveform_frame_tiles[128] = {
     0x40u, 0x40u, 0x40u, 0x40u, 0x40u, 0x40u, 0x40u, 0x40u,
     0x02u, 0x02u, 0x02u, 0x02u, 0x02u, 0x02u, 0x02u, 0x02u,
     0x02u, 0x02u, 0x02u, 0x02u, 0x02u, 0x02u, 0x02u, 0x02u
+};
+
+static const uint8_t slider_knob_tile[16] = {
+    0x3cu, 0x3cu, 0x3cu, 0x3cu, 0x3cu, 0x3cu, 0x3cu, 0x3cu,
+    0x3cu, 0x3cu, 0x3cu, 0x3cu, 0x3cu, 0x3cu, 0x3cu, 0x3cu
 };
 
 static const uint8_t waveform_frame_top_map[WAVEFORM_FRAME_W] = {
@@ -214,7 +220,12 @@ static void draw_slider(uint8_t x, uint8_t y, uint16_t value, uint16_t min, uint
     gotoxy(x, y);
     putchar('[');
     for (i = 0u; i < 10u; ++i) {
-        putchar(i == knob ? 'O' : '-');
+        if (i == knob) {
+            putchar(' ');
+            set_bkg_tile_xy((uint8_t)(x + 1u + i), y, SLIDER_KNOB_TILE);
+        } else {
+            putchar('.');
+        }
     }
     putchar(']');
 }
@@ -483,6 +494,7 @@ static void draw_help_ui(void) {
 }
 static void draw_static_ui(void) {
     cls();
+    set_bkg_data(SLIDER_KNOB_TILE, 1u, slider_knob_tile);
     put_text(4u, 1u, "GB DUB SIREN");
     put_text(1u, 3u, "LFO WAVE :");
     put_text(1u, 5u, "PITCH");
