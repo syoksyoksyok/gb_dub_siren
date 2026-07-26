@@ -356,7 +356,7 @@ static void draw_help_ui(void) {
 }
 static void draw_static_ui(void) {
     cls();
-    put_text(2u, 0u, "GB DUB SIREN");
+    put_text(2u, 0u, "> GB DUB SIREN <");
     put_text(0u, 2u, "WAVE:");
     put_text(0u, 4u, "PITCH");
     put_text(0u, 6u, "DEPTH");
