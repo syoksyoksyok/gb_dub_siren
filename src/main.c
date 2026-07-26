@@ -482,11 +482,11 @@ static void draw_help_ui(void) {
 static void draw_static_ui(void) {
     cls();
     put_text(4u, 1u, "GB DUB SIREN");
-    put_text(1u, 2u, "WAVE:");
-    put_text(1u, 4u, "PITCH");
-    put_text(1u, 6u, "DEPTH");
-    put_text(1u, 8u, "RATE ");
-    put_text(1u, 10u, "LFO WAVE");
+    put_text(1u, 3u, "WAVE:");
+    put_text(1u, 5u, "PITCH");
+    put_text(1u, 7u, "DEPTH");
+    put_text(1u, 9u, "RATE ");
+    put_text(1u, 11u, "LFO WAVE");
     draw_waveform_frame();
     waveform_init_map();
     show_title_sprites();
@@ -538,11 +538,11 @@ static void draw_lfo_marker(void) {
 }
 
 static void draw_ui(void) {
-    put_text(6u, 2u, wave_names[lfo_wave]);
+    put_text(6u, 3u, wave_names[lfo_wave]);
 
-    draw_slider(7u, 4u, base_pitch_hz, PITCH_MIN_HZ, PITCH_MAX_HZ);
-    draw_slider(7u, 6u, lfo_depth_hz, DEPTH_MIN_HZ, DEPTH_MAX_HZ);
-    draw_slider(7u, 8u, lfo_speed, SPEED_MIN, SPEED_MAX);
+    draw_slider(7u, 5u, base_pitch_hz, PITCH_MIN_HZ, PITCH_MAX_HZ);
+    draw_slider(7u, 7u, lfo_depth_hz, DEPTH_MIN_HZ, DEPTH_MAX_HZ);
+    draw_slider(7u, 9u, lfo_speed, SPEED_MIN, SPEED_MAX);
 
     ui_dirty = false;
 }
