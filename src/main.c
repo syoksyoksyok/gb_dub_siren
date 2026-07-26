@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "lfo_tables.h"
+#include "waveform_depth_lut.h"
 
 #define SCREEN_W 20u
 #define WAVEFORM_COLS 16u
@@ -162,6 +163,7 @@ static const uint8_t phase_to_marker_x[256] = {
 
 static uint16_t base_pitch_hz = 440u;
 static uint16_t lfo_depth_hz = 400u;
+static uint8_t lfo_depth_index = 80u;
 static uint8_t lfo_speed = 19u;
 static uint16_t lfo_phase = 0u;
 static int16_t lfo_value = 0;
@@ -237,12 +239,16 @@ static int16_t lfo_wave_value(uint16_t phase) {
 
 static uint8_t waveform_y_for_x(uint8_t x) {
     uint8_t source_y = waveform_y_tables[lfo_wave][waveform_source_x[x]];
-    int16_t centered_y = (int16_t)(source_y >> 1) - (int16_t)WAVEFORM_CENTER_Y;
-    int16_t scaled_y = (int16_t)WAVEFORM_CENTER_Y + ((centered_y * (int16_t)lfo_depth_hz) / (int16_t)DEPTH_MAX_HZ);
+    uint8_t half_y = source_y >> 1;
 
-    if (scaled_y < 0) return 0u;
-    if (scaled_y >= (int16_t)WAVEFORM_PIXEL_H) return (uint8_t)(WAVEFORM_PIXEL_H - 1u);
-    return (uint8_t)scaled_y;
+    if (half_y >= WAVEFORM_CENTER_Y) {
+        uint8_t delta = waveform_depth_delta_lut[lfo_depth_index][half_y - WAVEFORM_CENTER_Y];
+        uint8_t scaled_y = (uint8_t)(WAVEFORM_CENTER_Y + delta);
+        if (scaled_y >= WAVEFORM_PIXEL_H) return (uint8_t)(WAVEFORM_PIXEL_H - 1u);
+        return scaled_y;
+    }
+
+    return (uint8_t)(WAVEFORM_CENTER_Y - waveform_depth_delta_lut[lfo_depth_index][WAVEFORM_CENTER_Y - half_y]);
 }
 
 static void request_waveform_rebuild(uint8_t delay) {
@@ -338,6 +344,7 @@ static void update_input(void) {
         if (lfo_depth_hz < DEPTH_MAX_HZ - DEPTH_STEP_HZ) lfo_depth_hz += DEPTH_STEP_HZ;
         else lfo_depth_hz = DEPTH_MAX_HZ;
         if (old_lfo_depth_hz != lfo_depth_hz) {
+            if (lfo_depth_index < (uint8_t)(WAVEFORM_DEPTH_STEP_COUNT - 1u)) ++lfo_depth_index;
             ui_dirty = true;
             request_waveform_rebuild(WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES);
         }
@@ -346,6 +353,7 @@ static void update_input(void) {
         if (lfo_depth_hz > DEPTH_MIN_HZ + DEPTH_STEP_HZ) lfo_depth_hz -= DEPTH_STEP_HZ;
         else lfo_depth_hz = DEPTH_MIN_HZ;
         if (old_lfo_depth_hz != lfo_depth_hz) {
+            if (lfo_depth_index > 0u) --lfo_depth_index;
             ui_dirty = true;
             request_waveform_rebuild(WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES);
         }
