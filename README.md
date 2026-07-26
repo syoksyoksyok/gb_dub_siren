@@ -27,13 +27,12 @@ Use direct button combinations to control the synth parameters. Hold A to play s
 | Control | Action |
 |---|---|
 | A | Hold to play sound |
-| Up / Down | Change LFO waveform |
+| Up / Down | Increase / decrease LFO depth |
+| Start / Select | Change to previous / next LFO waveform |
 | A + Left / Right | Adjust base pitch while playing |
 | B + Left / Right | Adjust LFO rate |
 | A + B + Left / Right | Adjust LFO rate while playing |
-| Select | Decrease LFO depth |
-| Start | Increase LFO depth |
-| Start + Select | Open or close HELP |
+| Start + Select + A + B | Open or close HELP |
 
 The on-screen waveform display updates according to the selected waveform and LFO depth. A sprite marker shows the current LFO position.
 
@@ -44,7 +43,7 @@ The on-screen waveform display updates according to the selected waveform and LF
 | Pitch | 130 Hz to 2,100 Hz | 440 Hz | Base frequency before LFO modulation |
 | LFO Depth | 0 Hz to 600 Hz | 400 Hz | Maximum pitch modulation depth |
 | LFO Rate | approx. 0.159 Hz to 12.73 Hz | 19 / 80 | Step-based rate control |
-| LFO Wave | SINE, SQUARE, SAW, REV SAW | SQUARE | Selected with Up / Down |
+| LFO Wave | SINE, SQUARE, SAW, REV SAW | SQUARE | Selected with Start / Select |
 
 ## Build
 
@@ -95,7 +94,7 @@ build/syok-dub-siren-gb.gb
 - Parameters are changed in digital steps, unlike analog potentiometers.
 - Audio behavior may vary slightly between real hardware, flash carts, and emulators.
 - LFO waveform data is stored as 256-step lookup tables.
-- Start is reserved for increasing LFO depth, so waveform changes are handled by Up / Down only.
+- HELP requires Start + Select + A + B to avoid accidental activation during parameter changes.
 
 ## License
 
