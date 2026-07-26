@@ -50,7 +50,7 @@
 #define DEPTH_MIN_HZ 0u
 #define DEPTH_MAX_HZ 600u
 #define PITCH_STEP_HZ 25u
-#define DEPTH_STEP_HZ 5u
+#define DEPTH_STEP_HZ 10u
 #define SPEED_MIN 1u
 #define SPEED_MAX 80u
 
@@ -345,7 +345,8 @@ static void update_input(void) {
         if (lfo_depth_hz < DEPTH_MAX_HZ - DEPTH_STEP_HZ) lfo_depth_hz += DEPTH_STEP_HZ;
         else lfo_depth_hz = DEPTH_MAX_HZ;
         if (old_lfo_depth_hz != lfo_depth_hz) {
-            if (lfo_depth_index < (uint8_t)(WAVEFORM_DEPTH_STEP_COUNT - 1u)) ++lfo_depth_index;
+            if (lfo_depth_index < (uint8_t)(WAVEFORM_DEPTH_STEP_COUNT - 2u)) lfo_depth_index = (uint8_t)(lfo_depth_index + 2u);
+            else lfo_depth_index = (uint8_t)(WAVEFORM_DEPTH_STEP_COUNT - 1u);
             ui_dirty = true;
             request_waveform_rebuild(WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES);
         }
@@ -354,7 +355,8 @@ static void update_input(void) {
         if (lfo_depth_hz > DEPTH_MIN_HZ + DEPTH_STEP_HZ) lfo_depth_hz -= DEPTH_STEP_HZ;
         else lfo_depth_hz = DEPTH_MIN_HZ;
         if (old_lfo_depth_hz != lfo_depth_hz) {
-            if (lfo_depth_index > 0u) --lfo_depth_index;
+            if (lfo_depth_index > 1u) lfo_depth_index = (uint8_t)(lfo_depth_index - 2u);
+            else lfo_depth_index = 0u;
             ui_dirty = true;
             request_waveform_rebuild(WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES);
         }
