@@ -67,6 +67,7 @@ static bool desired_sound = false;
 static bool sound_active = false;
 static bool channel_triggered = false;
 static uint8_t volume = 0u;
+static uint8_t applied_volume = 0xffu;
 static uint8_t ui_tick = 0u;
 static bool ui_dirty = true;
 static bool help_visible = false;
@@ -189,7 +190,9 @@ static void apu_init(void) {
 
 static void apu_set_volume(uint8_t vol) {
     if (vol > 15u) vol = 15u;
+    if (vol == applied_volume) return;
     NR12_REG = (uint8_t)(vol << 4);
+    applied_volume = vol;
 }
 
 static void apu_set_frequency(uint16_t hz, bool trigger) {
@@ -204,7 +207,9 @@ static void update_lfo(void) {
 }
 
 static void update_input(void) {
+    uint16_t old_base_pitch_hz = base_pitch_hz;
     uint16_t old_lfo_depth_hz = lfo_depth_hz;
+    uint8_t old_lfo_speed = lfo_speed;
 
     if ((joy & J_START) && (joy & J_SELECT) && !((prev_joy & J_START) && (prev_joy & J_SELECT))) {
         help_visible = !help_visible;
@@ -223,14 +228,18 @@ static void update_input(void) {
     if ((joy & J_START) && !(joy & J_SELECT)) {
         if (lfo_depth_hz < DEPTH_MAX_HZ - DEPTH_STEP_HZ) lfo_depth_hz += DEPTH_STEP_HZ;
         else lfo_depth_hz = DEPTH_MAX_HZ;
-        ui_dirty = true;
-        if (old_lfo_depth_hz != lfo_depth_hz) request_waveform_rebuild(WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES);
+        if (old_lfo_depth_hz != lfo_depth_hz) {
+            ui_dirty = true;
+            request_waveform_rebuild(WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES);
+        }
         return;
     } else if ((joy & J_SELECT) && !(joy & J_START)) {
         if (lfo_depth_hz > DEPTH_MIN_HZ + DEPTH_STEP_HZ) lfo_depth_hz -= DEPTH_STEP_HZ;
         else lfo_depth_hz = DEPTH_MIN_HZ;
-        ui_dirty = true;
-        if (old_lfo_depth_hz != lfo_depth_hz) request_waveform_rebuild(WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES);
+        if (old_lfo_depth_hz != lfo_depth_hz) {
+            ui_dirty = true;
+            request_waveform_rebuild(WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES);
+        }
         return;
     }
 
@@ -256,7 +265,6 @@ static void update_input(void) {
         } else if (joy & J_B) {
             if (lfo_speed < SPEED_MAX) ++lfo_speed;
         }
-        ui_dirty = true;
     } else if (joy & J_LEFT) {
         if ((joy & J_A) && (joy & J_B)) {
             if (lfo_speed > SPEED_MIN) --lfo_speed;
@@ -266,35 +274,39 @@ static void update_input(void) {
         } else if (joy & J_B) {
             if (lfo_speed > SPEED_MIN) --lfo_speed;
         }
-        ui_dirty = true;
     }
 
-    if (old_lfo_depth_hz != lfo_depth_hz) {
-        request_waveform_rebuild(WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES);
+    if ((old_base_pitch_hz != base_pitch_hz) || (old_lfo_speed != lfo_speed)) {
+        ui_dirty = true;
     }
 }
 static void update_sound(void) {
     bool old_sound_active = sound_active;
-    int16_t hz = (int16_t)base_pitch_hz + lfo_value;
+    int16_t hz;
 
     desired_sound = ((joy & J_A) != 0u);
+    volume = desired_sound ? VOL_MAX : 0u;
+    apu_set_volume(volume);
+
+    if (!desired_sound) {
+        channel_triggered = false;
+        sound_active = false;
+        if (sound_active != old_sound_active) ui_dirty = true;
+        return;
+    }
+    hz = (int16_t)base_pitch_hz + lfo_value;
 
     if (hz < (int16_t)PITCH_MIN_HZ) hz = PITCH_MIN_HZ;
     if (hz > (int16_t)PITCH_MAX_HZ + (int16_t)DEPTH_MAX_HZ) hz = PITCH_MAX_HZ + DEPTH_MAX_HZ;
 
-    volume = desired_sound ? VOL_MAX : 0u;
-    apu_set_volume(volume);
-
-    if (desired_sound && !channel_triggered && volume > 0u) {
+    if (!channel_triggered) {
         apu_set_frequency((uint16_t)hz, true);
         channel_triggered = true;
     } else {
         apu_set_frequency((uint16_t)hz, false);
     }
 
-    if (!desired_sound && volume == 0u) channel_triggered = false;
-
-    sound_active = volume > 0u;
+    sound_active = true;
     if (sound_active != old_sound_active) ui_dirty = true;
 }
 
