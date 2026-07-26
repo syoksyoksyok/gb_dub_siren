@@ -461,8 +461,8 @@ static void hide_title_sprites(void) {
 }
 
 static void show_title_sprites(void) {
-    move_sprite(SPRITE_TITLE_LEFT, 24u, 16u);
-    move_sprite(SPRITE_TITLE_RIGHT, 144u, 16u);
+    move_sprite(SPRITE_TITLE_LEFT, 24u, 24u);
+    move_sprite(SPRITE_TITLE_RIGHT, 144u, 24u);
 }
 
 static void draw_help_ui(void) {
@@ -481,12 +481,12 @@ static void draw_help_ui(void) {
 }
 static void draw_static_ui(void) {
     cls();
-    put_text(4u, 0u, "GB DUB SIREN");
-    put_text(0u, 2u, "WAVE:");
-    put_text(0u, 4u, "PITCH");
-    put_text(0u, 6u, "DEPTH");
-    put_text(0u, 8u, "RATE ");
-    put_text(0u, 10u, "LFO WAVE");
+    put_text(4u, 1u, "GB DUB SIREN");
+    put_text(1u, 2u, "WAVE:");
+    put_text(1u, 4u, "PITCH");
+    put_text(1u, 6u, "DEPTH");
+    put_text(1u, 8u, "RATE ");
+    put_text(1u, 10u, "LFO WAVE");
     draw_waveform_frame();
     waveform_init_map();
     show_title_sprites();
