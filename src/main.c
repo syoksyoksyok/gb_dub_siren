@@ -392,7 +392,6 @@ static void draw_static_ui(void) {
     put_text(0u, 6u, "DEPTH");
     put_text(0u, 8u, "RATE ");
     put_text(0u, 10u, "LFO WAVE");
-    put_text(0u, 17u, "^ v WAVE ST/SE DP");
     waveform_init_map();
     show_title_sprites();
 }
