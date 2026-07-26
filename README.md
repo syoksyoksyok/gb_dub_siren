@@ -48,17 +48,25 @@ The on-screen waveform display updates according to the selected waveform and LF
 
 ## Build
 
-Install GBDK-2020 first. If `lcc` is available through your environment, run:
+Install GBDK-2020 first. The Makefile defaults to `GBDK_HOME=C:/Dev_tools/gbdk`:
 
 ```sh
 make
 ```
 
-If GBDK is not in your PATH, set `GBDK_HOME`:
+If GBDK is installed elsewhere, set `GBDK_HOME`:
 
 ```sh
 make GBDK_HOME=/path/to/gbdk
 ```
+
+To use `lcc` from your PATH instead of `GBDK_HOME`, clear the variable:
+
+```sh
+make GBDK_HOME=
+```
+
+The build runs `patch-rom-header.ps1`, so PowerShell must be available.
 
 On this Windows development environment, the PowerShell build script can also be used:
 
@@ -86,7 +94,7 @@ build/syok-dub-siren-gb.gb
 
 - Parameters are changed in digital steps, unlike analog potentiometers.
 - Audio behavior may vary slightly between real hardware, flash carts, and emulators.
-- The sine table is optimized by mirroring a 64-value quarter wave into a 256-step waveform.
+- LFO waveform data is stored as 256-step lookup tables.
 - Start is reserved for increasing LFO depth, so waveform changes are handled by Up / Down only.
 
 ## License

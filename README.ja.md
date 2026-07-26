@@ -8,17 +8,25 @@ GBDK-2020 で作成した DMG Game Boy 向けダブサイレン homebrew ROM で
 
 ## Build
 
-GBDK-2020 の `lcc` に PATH が通っている環境では次を実行します。
+GBDK-2020 をインストールしてください。Makefile は既定で `GBDK_HOME=C:/Dev_tools/gbdk` を使います。
 
 ```sh
 make
 ```
 
-PATH を通していない場合は `GBDK_HOME` を指定します。
+GBDK を別の場所にインストールしている場合は `GBDK_HOME` を指定します。
 
 ```sh
 make GBDK_HOME=/path/to/gbdk
 ```
+
+PATH 上の `lcc` を使う場合は、変数を空にして実行します。
+
+```sh
+make GBDK_HOME=
+```
+
+ビルド時に `patch-rom-header.ps1` を実行するため、PowerShell が必要です。
 
 出力 ROM:
 
@@ -69,7 +77,7 @@ ROMヘッダタイトルは、Game Boyヘッダの16文字制限に合わせて 
 
 - 発音中のCH1音量は最大15/15、マスター音量は最大7/7に設定しています。
 - 元のアナログポットと異なり、パラメータは方向キーで段階的に変更します。起動時はSQUARE波形、PITCHは440Hz、DEPTHは400Hz、LFO RATEは 1〜80 の 19 です。LFO RATE の範囲は約0.159Hz〜約12.73Hzです。Start+Select 同時押しでHELPを表示できます。
-- サイン波は軽量化のため 64 値クォーター波形をミラーして 256 ステップ化しています。
+- LFO 波形データは 256 ステップのルックアップテーブルとして保持しています。
 - 実機/エミュレータの APU 差により、音量フェードや再トリガの聴こえ方が多少変わります。
 
 ## License
