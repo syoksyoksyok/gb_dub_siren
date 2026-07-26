@@ -16,6 +16,9 @@
 #define WAVEFORM_CENTER_Y ((WAVEFORM_PIXEL_H - 1u) / 2u)
 #define WAVEFORM_START_X 2u
 #define WAVEFORM_START_Y 13u
+#define WAVEFORM_FRAME_X 1u
+#define WAVEFORM_FRAME_W 18u
+#define WAVEFORM_FRAME_RIGHT_X (WAVEFORM_FRAME_X + WAVEFORM_FRAME_W - 1u)
 #define WAVEFORM_FRAME_TOP_Y (WAVEFORM_START_Y - 1u)
 #define WAVEFORM_FRAME_BOTTOM_Y (WAVEFORM_START_Y + WAVEFORM_ROWS)
 #define WAVEFORM_TILE_BASE 128u
@@ -93,9 +96,8 @@ static const uint8_t waveform_frame_tiles[128] = {
     0x02u, 0x02u, 0x02u, 0x02u, 0x02u, 0x02u, 0x02u, 0x02u
 };
 
-static const uint8_t waveform_frame_top_map[SCREEN_W] = {
+static const uint8_t waveform_frame_top_map[WAVEFORM_FRAME_W] = {
     WAVEFORM_FRAME_TOP_LEFT_TILE,
-    WAVEFORM_FRAME_TOP_HORIZONTAL_TILE, WAVEFORM_FRAME_TOP_HORIZONTAL_TILE,
     WAVEFORM_FRAME_TOP_HORIZONTAL_TILE, WAVEFORM_FRAME_TOP_HORIZONTAL_TILE,
     WAVEFORM_FRAME_TOP_HORIZONTAL_TILE, WAVEFORM_FRAME_TOP_HORIZONTAL_TILE,
     WAVEFORM_FRAME_TOP_HORIZONTAL_TILE, WAVEFORM_FRAME_TOP_HORIZONTAL_TILE,
@@ -107,9 +109,8 @@ static const uint8_t waveform_frame_top_map[SCREEN_W] = {
     WAVEFORM_FRAME_TOP_RIGHT_TILE
 };
 
-static const uint8_t waveform_frame_bottom_map[SCREEN_W] = {
+static const uint8_t waveform_frame_bottom_map[WAVEFORM_FRAME_W] = {
     WAVEFORM_FRAME_BOTTOM_LEFT_TILE,
-    WAVEFORM_FRAME_BOTTOM_HORIZONTAL_TILE, WAVEFORM_FRAME_BOTTOM_HORIZONTAL_TILE,
     WAVEFORM_FRAME_BOTTOM_HORIZONTAL_TILE, WAVEFORM_FRAME_BOTTOM_HORIZONTAL_TILE,
     WAVEFORM_FRAME_BOTTOM_HORIZONTAL_TILE, WAVEFORM_FRAME_BOTTOM_HORIZONTAL_TILE,
     WAVEFORM_FRAME_BOTTOM_HORIZONTAL_TILE, WAVEFORM_FRAME_BOTTOM_HORIZONTAL_TILE,
@@ -446,11 +447,11 @@ static void draw_waveform_frame(void) {
     uint8_t y;
 
     set_bkg_data(WAVEFORM_FRAME_TILE_BASE, 8u, waveform_frame_tiles);
-    set_bkg_tiles(0u, WAVEFORM_FRAME_TOP_Y, SCREEN_W, 1u, waveform_frame_top_map);
-    set_bkg_tiles(0u, WAVEFORM_FRAME_BOTTOM_Y, SCREEN_W, 1u, waveform_frame_bottom_map);
+    set_bkg_tiles(WAVEFORM_FRAME_X, WAVEFORM_FRAME_TOP_Y, WAVEFORM_FRAME_W, 1u, waveform_frame_top_map);
+    set_bkg_tiles(WAVEFORM_FRAME_X, WAVEFORM_FRAME_BOTTOM_Y, WAVEFORM_FRAME_W, 1u, waveform_frame_bottom_map);
     for (y = WAVEFORM_START_Y; y < WAVEFORM_FRAME_BOTTOM_Y; ++y) {
-        set_bkg_tiles(0u, y, 1u, 1u, waveform_frame_left_map);
-        set_bkg_tiles((uint8_t)(SCREEN_W - 1u), y, 1u, 1u, waveform_frame_right_map);
+        set_bkg_tiles(WAVEFORM_FRAME_X, y, 1u, 1u, waveform_frame_left_map);
+        set_bkg_tiles(WAVEFORM_FRAME_RIGHT_X, y, 1u, 1u, waveform_frame_right_map);
     }
 }
 
