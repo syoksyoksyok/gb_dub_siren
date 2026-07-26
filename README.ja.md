@@ -38,19 +38,19 @@ ROMヘッダタイトルは、Game Boyヘッダの16文字制限に合わせて 
 
 ## 操作対応表
 
-方向キーとボタンの組み合わせで各パラメータを直接変更します。上下キーでLFO波形を変更し、A + Left / Right でPITCH、B + Left / Right でRATE、Select / Start でDEPTHを変更します。
+方向キーとボタンの組み合わせで各パラメータを直接変更します。Start / Select でLFO波形を変更し、A + Left / Right でPITCH、B + Left / Right でRATE、Up / Down でDEPTHを変更します。
 
 | 元の操作子 | Game Boy割り当て | 実装挙動 |
 |---|---|---|
 | ゲート | A | 押している間だけ発音。A + Left / Right で発音しながら PITCH 調整 |
 | キル | なし | Game Boy版では未使用 |
 | LFO一時停止 | なし | Game Boy版では未使用 |
-| 波形切替 | Up / Down | 上下キーでLFO波形切替 |
+| 波形切替 | Start / Select | Startで前のLFO波形、Selectで次のLFO波形に切替 |
 | POT1 ピッチ | A + Left / Right | ベースピッチを増減 |
-| POT2 LFO深さ | Select、Start | Selectで減少、Startで増加 |
+| POT2 LFO深さ | Up / Down | Upで増加、Downで減少 |
 | POT3 LFO速度 | B + Left / Right、またはA + B + Left / Right | LFO RATEを増減 |
 
-上下キーで LFO 波形を変更できます。A ボタンは Left / Right と組み合わせると発音しながら PITCH を直接変更できます。B ボタンは Left / Right と組み合わせると LFO RATE を直接変更できます。A+B+Left/Right では発音しながら LFO RATE を変更できます。Start+Select 同時押しでHELPを表示し、Select単押しで LFO DEPTH を下げ、Start単押しで LFO DEPTH を上げます。LFO WAVE 欄には背景タイルで描いた128x24pxの波形を表示し、現在位置をスプライトマーカーで示します。
+Start / Select で LFO 波形を変更できます。A ボタンは Left / Right と組み合わせると発音しながら PITCH を直接変更できます。B ボタンは Left / Right と組み合わせると LFO RATE を直接変更できます。A+B+Left/Right では発音しながら LFO RATE を変更できます。Start+Select+A+B 同時押しでHELPを表示し、Down単押しで LFO DEPTH を下げ、Up単押しで LFO DEPTH を上げます。LFO WAVE 欄には背景タイルで描いた128x24pxの波形を表示し、現在位置をスプライトマーカーで示します。
 
 ## 仕様メモ
 
@@ -76,7 +76,7 @@ ROMヘッダタイトルは、Game Boyヘッダの16文字制限に合わせて 
 ## 既知の制限
 
 - 発音中のCH1音量は最大15/15、マスター音量は最大7/7に設定しています。
-- 元のアナログポットと異なり、パラメータは方向キーで段階的に変更します。起動時はSQUARE波形、PITCHは440Hz、DEPTHは400Hz、LFO RATEは 1〜80 の 19 です。LFO RATE の範囲は約0.159Hz〜約12.73Hzです。Start+Select 同時押しでHELPを表示できます。
+- 元のアナログポットと異なり、パラメータはボタンで段階的に変更します。起動時はSQUARE波形、PITCHは440Hz、DEPTHは400Hz、LFO RATEは 1〜80 の 19 です。LFO RATE の範囲は約0.159Hz〜約12.73Hzです。Start+Select+A+B 同時押しでHELPを表示できます。
 - LFO 波形データは 256 ステップのルックアップテーブルとして保持しています。
 - 実機/エミュレータの APU 差により、音量フェードや再トリガの聴こえ方が多少変わります。
 

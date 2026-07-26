@@ -338,7 +338,8 @@ static void update_input(void) {
     uint16_t old_lfo_depth_hz = lfo_depth_hz;
     uint8_t old_lfo_speed = lfo_speed;
 
-    if ((joy & J_START) && (joy & J_SELECT) && !((prev_joy & J_START) && (prev_joy & J_SELECT))) {
+    if ((joy & J_START) && (joy & J_SELECT) && (joy & J_A) && (joy & J_B) &&
+        !((prev_joy & J_START) && (prev_joy & J_SELECT) && (prev_joy & J_A) && (prev_joy & J_B))) {
         help_visible = !help_visible;
         if (help_visible) {
             draw_help_ui();
@@ -352,7 +353,7 @@ static void update_input(void) {
 
     if (help_visible) return;
 
-    if ((joy & J_START) && !(joy & J_SELECT)) {
+    if ((joy & J_UP) && !(joy & J_DOWN)) {
         if (lfo_depth_hz < DEPTH_MAX_HZ - DEPTH_STEP_HZ) lfo_depth_hz += DEPTH_STEP_HZ;
         else lfo_depth_hz = DEPTH_MAX_HZ;
         if (old_lfo_depth_hz != lfo_depth_hz) {
@@ -362,7 +363,7 @@ static void update_input(void) {
             request_waveform_rebuild(WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES);
         }
         return;
-    } else if ((joy & J_SELECT) && !(joy & J_START)) {
+    } else if ((joy & J_DOWN) && !(joy & J_UP)) {
         if (lfo_depth_hz > DEPTH_MIN_HZ + DEPTH_STEP_HZ) lfo_depth_hz -= DEPTH_STEP_HZ;
         else lfo_depth_hz = DEPTH_MIN_HZ;
         if (old_lfo_depth_hz != lfo_depth_hz) {
@@ -374,14 +375,14 @@ static void update_input(void) {
         return;
     }
 
-    if ((joy & J_UP) && !(prev_joy & J_UP)) {
+    if ((joy & J_START) && !(prev_joy & J_START) && !(joy & J_SELECT)) {
         if (lfo_wave == WAVE_SINE) lfo_wave = WAVE_REV_SAW;
         else lfo_wave = (lfo_wave_t)(lfo_wave - 1u);
         request_waveform_rebuild(0u);
         ui_dirty = true;
     }
 
-    if ((joy & J_DOWN) && !(prev_joy & J_DOWN)) {
+    if ((joy & J_SELECT) && !(prev_joy & J_SELECT) && !(joy & J_START)) {
         lfo_wave = (lfo_wave_t)((lfo_wave + 1u) % WAVE_COUNT);
         request_waveform_rebuild(0u);
         ui_dirty = true;
@@ -484,13 +485,13 @@ static void draw_help_ui(void) {
     hide_title_sprites();
     put_text(8u, 0u, "HELP");
     put_text(0u, 2u, "A HOLD SOUND");
-    put_text(0u, 4u, "^ v CHANGE WAVE");
+    put_text(0u, 4u, "ST/SE CHANGE WAVE");
     put_text(0u, 6u, "< > WITH A OR B");
-    put_text(0u, 8u, "ST + SE HELP");
+    put_text(0u, 8u, "^ / v DEPTH");
     put_text(0u, 10u, "A + < > PITCH");
     put_text(0u, 12u, "B + < > RATE");
-    put_text(0u, 14u, "SEL / ST DEPTH");
-    put_text(0u, 17u, "ST + SE CLOSE");
+    put_text(0u, 14u, "ST+SE+A+B HELP");
+    put_text(0u, 17u, "ST+SE+A+B CLOSE");
 }
 static void draw_static_ui(void) {
     cls();
