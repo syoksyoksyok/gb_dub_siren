@@ -17,6 +17,13 @@
 #define WAVEFORM_TILE_COUNT (SCREEN_W * WAVEFORM_ROWS)
 #define WAVEFORM_UPLOAD_TILES_PER_FRAME 4u
 
+#define SPRITE_LFO_MARKER 0u
+#define SPRITE_TITLE_LEFT 1u
+#define SPRITE_TITLE_RIGHT 2u
+#define TILE_LFO_MARKER 0u
+#define TILE_TITLE_LEFT_SPEAKER 1u
+#define TILE_TITLE_RIGHT_SPEAKER 2u
+
 #define UI_REFRESH_FRAMES 6u
 #define WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES 10u
 #define LFO_STEP_SCALE 174u
@@ -44,6 +51,13 @@ typedef enum {
 static const uint8_t marker_tile[16] = {
     0x18u, 0x18u, 0x3cu, 0x3cu, 0x7eu, 0x7eu, 0xffu, 0xffu,
     0xffu, 0xffu, 0x7eu, 0x7eu, 0x3cu, 0x3cu, 0x18u, 0x18u
+};
+
+static const uint8_t title_speaker_tiles[32] = {
+    0x00u, 0x00u, 0x30u, 0x30u, 0x3cu, 0x3cu, 0xfeu, 0xfeu,
+    0xfeu, 0xfeu, 0x3cu, 0x3cu, 0x30u, 0x30u, 0x00u, 0x00u,
+    0x00u, 0x00u, 0x0cu, 0x0cu, 0x3cu, 0x3cu, 0x7fu, 0x7fu,
+    0x7fu, 0x7fu, 0x3cu, 0x3cu, 0x0cu, 0x0cu, 0x00u, 0x00u
 };
 
 static const char * const wave_names[WAVE_COUNT] = {
@@ -100,6 +114,8 @@ static uint8_t waveform_upload_index = WAVEFORM_TILE_COUNT;
 static void draw_help_ui(void);
 static void draw_static_ui(void);
 static void draw_ui(void);
+static void hide_title_sprites(void);
+static void show_title_sprites(void);
 static void upload_all_lfo_waveform_tiles(void);
 
 static void put_text(uint8_t x, uint8_t y, const char *text) {
@@ -337,13 +353,27 @@ static void waveform_init_map(void) {
     }
 
     set_bkg_tiles(0u, WAVEFORM_START_Y, SCREEN_W, WAVEFORM_ROWS, waveform_tile_map);
-    set_sprite_data(0u, 1u, marker_tile);
-    set_sprite_tile(0u, 0u);
+    set_sprite_data(TILE_LFO_MARKER, 1u, marker_tile);
+    set_sprite_data(TILE_TITLE_LEFT_SPEAKER, 2u, title_speaker_tiles);
+    set_sprite_tile(SPRITE_LFO_MARKER, TILE_LFO_MARKER);
+    set_sprite_tile(SPRITE_TITLE_LEFT, TILE_TITLE_LEFT_SPEAKER);
+    set_sprite_tile(SPRITE_TITLE_RIGHT, TILE_TITLE_RIGHT_SPEAKER);
+}
+
+static void hide_title_sprites(void) {
+    move_sprite(SPRITE_TITLE_LEFT, 0u, 0u);
+    move_sprite(SPRITE_TITLE_RIGHT, 0u, 0u);
+}
+
+static void show_title_sprites(void) {
+    move_sprite(SPRITE_TITLE_LEFT, 24u, 16u);
+    move_sprite(SPRITE_TITLE_RIGHT, 144u, 16u);
 }
 
 static void draw_help_ui(void) {
     cls();
-    move_sprite(0u, 0u, 0u);
+    move_sprite(SPRITE_LFO_MARKER, 0u, 0u);
+    hide_title_sprites();
     put_text(8u, 0u, "HELP");
     put_text(0u, 2u, "A HOLD SOUND");
     put_text(0u, 4u, "^ v CHANGE WAVE");
@@ -356,7 +386,7 @@ static void draw_help_ui(void) {
 }
 static void draw_static_ui(void) {
     cls();
-    put_text(2u, 0u, "> GB DUB SIREN <");
+    put_text(4u, 0u, "GB DUB SIREN");
     put_text(0u, 2u, "WAVE:");
     put_text(0u, 4u, "PITCH");
     put_text(0u, 6u, "DEPTH");
@@ -364,6 +394,7 @@ static void draw_static_ui(void) {
     put_text(0u, 10u, "LFO WAVE");
     put_text(0u, 17u, "^ v WAVE ST/SE DP");
     waveform_init_map();
+    show_title_sprites();
 }
 
 static void upload_all_lfo_waveform_tiles(void) {
@@ -408,7 +439,7 @@ static void draw_lfo_marker(void) {
     uint8_t x = phase_to_marker_x[(uint8_t)(lfo_phase >> 8)];
     uint8_t y = waveform_y_pixels[x];
 
-    move_sprite(0u, (uint8_t)(8u + x), (uint8_t)(16u + (WAVEFORM_START_Y * 8u) + y));
+    move_sprite(SPRITE_LFO_MARKER, (uint8_t)(8u + x), (uint8_t)(16u + (WAVEFORM_START_Y * 8u) + y));
 }
 
 static void draw_ui(void) {
