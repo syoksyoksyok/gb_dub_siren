@@ -8,13 +8,25 @@
 #include "lfo_tables.h"
 
 #define SCREEN_W 20u
-#define WAVEFORM_ROWS 6u
-#define WAVEFORM_PIXEL_W 160u
-#define WAVEFORM_PIXEL_H 48u
+#define WAVEFORM_COLS 16u
+#define WAVEFORM_ROWS 3u
+#define WAVEFORM_PIXEL_W 128u
+#define WAVEFORM_PIXEL_H 24u
 #define WAVEFORM_CENTER_Y ((WAVEFORM_PIXEL_H - 1u) / 2u)
-#define WAVEFORM_START_Y 11u
+#define WAVEFORM_START_X 2u
+#define WAVEFORM_START_Y 12u
+#define WAVEFORM_FRAME_TOP_Y (WAVEFORM_START_Y - 1u)
+#define WAVEFORM_FRAME_BOTTOM_Y (WAVEFORM_START_Y + WAVEFORM_ROWS)
 #define WAVEFORM_TILE_BASE 128u
-#define WAVEFORM_TILE_COUNT (SCREEN_W * WAVEFORM_ROWS)
+#define WAVEFORM_TILE_COUNT (WAVEFORM_COLS * WAVEFORM_ROWS)
+#define WAVEFORM_FRAME_TILE_BASE 176u
+#define WAVEFORM_FRAME_TOP_LEFT_TILE WAVEFORM_FRAME_TILE_BASE
+#define WAVEFORM_FRAME_TOP_RIGHT_TILE (WAVEFORM_FRAME_TILE_BASE + 1u)
+#define WAVEFORM_FRAME_BOTTOM_LEFT_TILE (WAVEFORM_FRAME_TILE_BASE + 2u)
+#define WAVEFORM_FRAME_BOTTOM_RIGHT_TILE (WAVEFORM_FRAME_TILE_BASE + 3u)
+#define WAVEFORM_FRAME_HORIZONTAL_TILE (WAVEFORM_FRAME_TILE_BASE + 4u)
+#define WAVEFORM_FRAME_LEFT_VERTICAL_TILE (WAVEFORM_FRAME_TILE_BASE + 5u)
+#define WAVEFORM_FRAME_RIGHT_VERTICAL_TILE (WAVEFORM_FRAME_TILE_BASE + 6u)
 #define WAVEFORM_UPLOAD_TILES_PER_FRAME 4u
 
 #define SPRITE_LFO_MARKER 0u
@@ -25,7 +37,7 @@
 #define TILE_TITLE_RIGHT_SPEAKER 2u
 
 #define UI_REFRESH_FRAMES 6u
-#define WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES 10u
+#define WAVEFORM_DEPTH_REDRAW_DELAY_FRAMES 3u
 #define LFO_STEP_SCALE 174u
 
 #define PITCH_MIN_HZ 130u
@@ -60,6 +72,54 @@ static const uint8_t title_speaker_tiles[32] = {
     0x7fu, 0x7fu, 0x3cu, 0x3cu, 0x0cu, 0x0cu, 0x00u, 0x00u
 };
 
+static const uint8_t waveform_frame_tiles[112] = {
+    0x00u, 0x00u, 0x7fu, 0x7fu, 0x7fu, 0x7fu, 0x60u, 0x60u,
+    0x60u, 0x60u, 0x60u, 0x60u, 0x60u, 0x60u, 0x60u, 0x60u,
+    0x00u, 0x00u, 0xfeu, 0xfeu, 0xfeu, 0xfeu, 0x06u, 0x06u,
+    0x06u, 0x06u, 0x06u, 0x06u, 0x06u, 0x06u, 0x06u, 0x06u,
+    0x60u, 0x60u, 0x60u, 0x60u, 0x60u, 0x60u, 0x60u, 0x60u,
+    0x60u, 0x60u, 0x7fu, 0x7fu, 0x7fu, 0x7fu, 0x00u, 0x00u,
+    0x06u, 0x06u, 0x06u, 0x06u, 0x06u, 0x06u, 0x06u, 0x06u,
+    0x06u, 0x06u, 0xfeu, 0xfeu, 0xfeu, 0xfeu, 0x00u, 0x00u,
+    0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0xffu, 0x00u, 0x00u,
+    0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+    0x60u, 0x60u, 0x60u, 0x60u, 0x60u, 0x60u, 0x60u, 0x60u,
+    0x60u, 0x60u, 0x60u, 0x60u, 0x60u, 0x60u, 0x60u, 0x60u,
+    0x06u, 0x06u, 0x06u, 0x06u, 0x06u, 0x06u, 0x06u, 0x06u,
+    0x06u, 0x06u, 0x06u, 0x06u, 0x06u, 0x06u, 0x06u, 0x06u
+};
+
+static const uint8_t waveform_frame_top_map[SCREEN_W] = {
+    WAVEFORM_FRAME_TOP_LEFT_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_TOP_RIGHT_TILE
+};
+
+static const uint8_t waveform_frame_bottom_map[SCREEN_W] = {
+    WAVEFORM_FRAME_BOTTOM_LEFT_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_HORIZONTAL_TILE, WAVEFORM_FRAME_HORIZONTAL_TILE,
+    WAVEFORM_FRAME_BOTTOM_RIGHT_TILE
+};
+
+static const uint8_t waveform_frame_left_map[1] = { WAVEFORM_FRAME_LEFT_VERTICAL_TILE };
+static const uint8_t waveform_frame_right_map[1] = { WAVEFORM_FRAME_RIGHT_VERTICAL_TILE };
+
 static const char * const wave_names[WAVE_COUNT] = {
     "SINE   ",
     "SQUARE ",
@@ -67,23 +127,34 @@ static const char * const wave_names[WAVE_COUNT] = {
     "REV SAW"
 };
 
+static const uint8_t waveform_source_x[WAVEFORM_PIXEL_W] = {
+    0u, 1u, 2u, 3u, 5u, 6u, 7u, 8u, 10u, 11u, 12u, 13u, 15u, 16u, 17u, 18u,
+    20u, 21u, 22u, 23u, 25u, 26u, 27u, 28u, 30u, 31u, 32u, 33u, 35u, 36u, 37u, 38u,
+    40u, 41u, 42u, 43u, 45u, 46u, 47u, 48u, 50u, 51u, 52u, 53u, 55u, 56u, 57u, 58u,
+    60u, 61u, 62u, 63u, 65u, 66u, 67u, 68u, 70u, 71u, 72u, 73u, 75u, 76u, 77u, 78u,
+    80u, 81u, 82u, 83u, 85u, 86u, 87u, 88u, 90u, 91u, 92u, 93u, 95u, 96u, 97u, 98u,
+    100u, 101u, 102u, 103u, 105u, 106u, 107u, 108u, 110u, 111u, 112u, 113u, 115u, 116u, 117u, 118u,
+    120u, 121u, 122u, 123u, 125u, 126u, 127u, 128u, 130u, 131u, 132u, 133u, 135u, 136u, 137u, 138u,
+    140u, 141u, 142u, 143u, 145u, 146u, 147u, 148u, 150u, 151u, 152u, 153u, 155u, 156u, 157u, 159u
+};
+
 static const uint8_t phase_to_marker_x[256] = {
-    0u, 0u, 1u, 1u, 2u, 3u, 3u, 4u, 4u, 5u, 6u, 6u, 7u, 8u, 8u, 9u,
-    9u, 10u, 11u, 11u, 12u, 13u, 13u, 14u, 14u, 15u, 16u, 16u, 17u, 18u, 18u, 19u,
-    19u, 20u, 21u, 21u, 22u, 22u, 23u, 24u, 24u, 25u, 26u, 26u, 27u, 27u, 28u, 29u,
-    29u, 30u, 31u, 31u, 32u, 32u, 33u, 34u, 34u, 35u, 36u, 36u, 37u, 37u, 38u, 39u,
-    39u, 40u, 40u, 41u, 42u, 42u, 43u, 44u, 44u, 45u, 45u, 46u, 47u, 47u, 48u, 49u,
-    49u, 50u, 50u, 51u, 52u, 52u, 53u, 54u, 54u, 55u, 55u, 56u, 57u, 57u, 58u, 59u,
-    59u, 60u, 60u, 61u, 62u, 62u, 63u, 63u, 64u, 65u, 65u, 66u, 67u, 67u, 68u, 68u,
-    69u, 70u, 70u, 71u, 72u, 72u, 73u, 73u, 74u, 75u, 75u, 76u, 77u, 77u, 78u, 78u,
-    79u, 80u, 80u, 81u, 81u, 82u, 83u, 83u, 84u, 85u, 85u, 86u, 86u, 87u, 88u, 88u,
-    89u, 90u, 90u, 91u, 91u, 92u, 93u, 93u, 94u, 95u, 95u, 96u, 96u, 97u, 98u, 98u,
-    99u, 99u, 100u, 101u, 101u, 102u, 103u, 103u, 104u, 104u, 105u, 106u, 106u, 107u, 108u, 108u,
-    109u, 109u, 110u, 111u, 111u, 112u, 113u, 113u, 114u, 114u, 115u, 116u, 116u, 117u, 118u, 118u,
-    119u, 119u, 120u, 121u, 121u, 122u, 122u, 123u, 124u, 124u, 125u, 126u, 126u, 127u, 127u, 128u,
-    129u, 129u, 130u, 131u, 131u, 132u, 132u, 133u, 134u, 134u, 135u, 136u, 136u, 137u, 137u, 138u,
-    139u, 139u, 140u, 140u, 141u, 142u, 142u, 143u, 144u, 144u, 145u, 145u, 146u, 147u, 147u, 148u,
-    149u, 149u, 150u, 150u, 151u, 152u, 152u, 153u, 154u, 154u, 155u, 155u, 156u, 157u, 157u, 158u
+    0u, 0u, 0u, 1u, 1u, 2u, 2u, 3u, 3u, 4u, 4u, 5u, 5u, 6u, 6u, 7u,
+    7u, 8u, 8u, 9u, 9u, 10u, 10u, 11u, 11u, 12u, 12u, 13u, 13u, 14u, 14u, 15u,
+    15u, 16u, 16u, 17u, 17u, 18u, 18u, 19u, 19u, 20u, 20u, 21u, 21u, 22u, 22u, 23u,
+    23u, 24u, 24u, 25u, 25u, 26u, 26u, 27u, 27u, 28u, 28u, 29u, 29u, 30u, 30u, 31u,
+    31u, 32u, 32u, 33u, 33u, 34u, 34u, 35u, 35u, 36u, 36u, 37u, 37u, 38u, 38u, 39u,
+    39u, 40u, 40u, 41u, 41u, 42u, 42u, 43u, 43u, 44u, 44u, 45u, 45u, 46u, 46u, 47u,
+    47u, 48u, 48u, 49u, 49u, 50u, 50u, 51u, 51u, 52u, 52u, 53u, 53u, 54u, 54u, 55u,
+    55u, 56u, 56u, 57u, 57u, 58u, 58u, 59u, 59u, 60u, 60u, 61u, 61u, 62u, 62u, 63u,
+    63u, 63u, 64u, 64u, 65u, 65u, 66u, 66u, 67u, 67u, 68u, 68u, 69u, 69u, 70u, 70u,
+    71u, 71u, 72u, 72u, 73u, 73u, 74u, 74u, 75u, 75u, 76u, 76u, 77u, 77u, 78u, 78u,
+    79u, 79u, 80u, 80u, 81u, 81u, 82u, 82u, 83u, 83u, 84u, 84u, 85u, 85u, 86u, 86u,
+    87u, 87u, 88u, 88u, 89u, 89u, 90u, 90u, 91u, 91u, 92u, 92u, 93u, 93u, 94u, 94u,
+    95u, 95u, 96u, 96u, 97u, 97u, 98u, 98u, 99u, 99u, 100u, 100u, 101u, 101u, 102u, 102u,
+    103u, 103u, 104u, 104u, 105u, 105u, 106u, 106u, 107u, 107u, 108u, 108u, 109u, 109u, 110u, 110u,
+    111u, 111u, 112u, 112u, 113u, 113u, 114u, 114u, 115u, 115u, 116u, 116u, 117u, 117u, 118u, 118u,
+    119u, 119u, 120u, 120u, 121u, 121u, 122u, 122u, 123u, 123u, 124u, 124u, 125u, 125u, 126u, 126u
 };
 
 static uint16_t base_pitch_hz = 440u;
@@ -162,8 +233,8 @@ static int16_t lfo_wave_value(uint16_t phase) {
 }
 
 static uint8_t waveform_y_for_x(uint8_t x) {
-    int16_t source_y = (int16_t)waveform_y_tables[lfo_wave][x];
-    int16_t centered_y = source_y - (int16_t)WAVEFORM_CENTER_Y;
+    uint8_t source_y = waveform_y_tables[lfo_wave][waveform_source_x[x]];
+    int16_t centered_y = (int16_t)(source_y >> 1) - (int16_t)WAVEFORM_CENTER_Y;
     int16_t scaled_y = (int16_t)WAVEFORM_CENTER_Y + ((centered_y * (int16_t)lfo_depth_hz) / (int16_t)DEPTH_MAX_HZ);
 
     if (scaled_y < 0) return 0u;
@@ -180,7 +251,7 @@ static void request_waveform_rebuild(uint8_t delay) {
 static void waveform_set_pixel(uint8_t x, uint8_t y) {
     uint8_t tile_col = x >> 3;
     uint8_t tile_row = y >> 3;
-    uint16_t tile_index = (uint16_t)tile_row * SCREEN_W + tile_col;
+    uint16_t tile_index = (uint16_t)tile_row * WAVEFORM_COLS + tile_col;
     uint16_t offset = (tile_index * 16u) + ((uint16_t)(y & 0x07u) * 2u);
     uint8_t mask = (uint8_t)(0x80u >> (x & 0x07u));
 
@@ -352,12 +423,24 @@ static void waveform_init_map(void) {
         waveform_tile_map[i] = (uint8_t)(WAVEFORM_TILE_BASE + i);
     }
 
-    set_bkg_tiles(0u, WAVEFORM_START_Y, SCREEN_W, WAVEFORM_ROWS, waveform_tile_map);
+    set_bkg_tiles(WAVEFORM_START_X, WAVEFORM_START_Y, WAVEFORM_COLS, WAVEFORM_ROWS, waveform_tile_map);
     set_sprite_data(TILE_LFO_MARKER, 1u, marker_tile);
     set_sprite_data(TILE_TITLE_LEFT_SPEAKER, 2u, title_speaker_tiles);
     set_sprite_tile(SPRITE_LFO_MARKER, TILE_LFO_MARKER);
     set_sprite_tile(SPRITE_TITLE_LEFT, TILE_TITLE_LEFT_SPEAKER);
     set_sprite_tile(SPRITE_TITLE_RIGHT, TILE_TITLE_RIGHT_SPEAKER);
+}
+
+static void draw_waveform_frame(void) {
+    uint8_t y;
+
+    set_bkg_data(WAVEFORM_FRAME_TILE_BASE, 7u, waveform_frame_tiles);
+    set_bkg_tiles(0u, WAVEFORM_FRAME_TOP_Y, SCREEN_W, 1u, waveform_frame_top_map);
+    set_bkg_tiles(0u, WAVEFORM_FRAME_BOTTOM_Y, SCREEN_W, 1u, waveform_frame_bottom_map);
+    for (y = WAVEFORM_START_Y; y < WAVEFORM_FRAME_BOTTOM_Y; ++y) {
+        set_bkg_tiles(0u, y, 1u, 1u, waveform_frame_left_map);
+        set_bkg_tiles((uint8_t)(SCREEN_W - 1u), y, 1u, 1u, waveform_frame_right_map);
+    }
 }
 
 static void hide_title_sprites(void) {
@@ -392,6 +475,7 @@ static void draw_static_ui(void) {
     put_text(0u, 6u, "DEPTH");
     put_text(0u, 8u, "RATE ");
     put_text(0u, 10u, "LFO WAVE");
+    draw_waveform_frame();
     waveform_init_map();
     show_title_sprites();
 }
@@ -438,7 +522,7 @@ static void draw_lfo_marker(void) {
     uint8_t x = phase_to_marker_x[(uint8_t)(lfo_phase >> 8)];
     uint8_t y = waveform_y_pixels[x];
 
-    move_sprite(SPRITE_LFO_MARKER, (uint8_t)(5u + x), (uint8_t)(13u + (WAVEFORM_START_Y * 8u) + y));
+    move_sprite(SPRITE_LFO_MARKER, (uint8_t)(5u + (WAVEFORM_START_X * 8u) + x), (uint8_t)(13u + (WAVEFORM_START_Y * 8u) + y));
 }
 
 static void draw_ui(void) {
