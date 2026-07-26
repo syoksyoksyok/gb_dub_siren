@@ -438,7 +438,7 @@ static void draw_lfo_marker(void) {
     uint8_t x = phase_to_marker_x[(uint8_t)(lfo_phase >> 8)];
     uint8_t y = waveform_y_pixels[x];
 
-    move_sprite(SPRITE_LFO_MARKER, (uint8_t)(8u + x), (uint8_t)(16u + (WAVEFORM_START_Y * 8u) + y));
+    move_sprite(SPRITE_LFO_MARKER, (uint8_t)(5u + x), (uint8_t)(13u + (WAVEFORM_START_Y * 8u) + y));
 }
 
 static void draw_ui(void) {
