@@ -53,6 +53,25 @@ static const char * const wave_names[WAVE_COUNT] = {
     "REV SAW"
 };
 
+static const uint8_t phase_to_marker_x[256] = {
+    0u, 0u, 1u, 1u, 2u, 3u, 3u, 4u, 4u, 5u, 6u, 6u, 7u, 8u, 8u, 9u,
+    9u, 10u, 11u, 11u, 12u, 13u, 13u, 14u, 14u, 15u, 16u, 16u, 17u, 18u, 18u, 19u,
+    19u, 20u, 21u, 21u, 22u, 22u, 23u, 24u, 24u, 25u, 26u, 26u, 27u, 27u, 28u, 29u,
+    29u, 30u, 31u, 31u, 32u, 32u, 33u, 34u, 34u, 35u, 36u, 36u, 37u, 37u, 38u, 39u,
+    39u, 40u, 40u, 41u, 42u, 42u, 43u, 44u, 44u, 45u, 45u, 46u, 47u, 47u, 48u, 49u,
+    49u, 50u, 50u, 51u, 52u, 52u, 53u, 54u, 54u, 55u, 55u, 56u, 57u, 57u, 58u, 59u,
+    59u, 60u, 60u, 61u, 62u, 62u, 63u, 63u, 64u, 65u, 65u, 66u, 67u, 67u, 68u, 68u,
+    69u, 70u, 70u, 71u, 72u, 72u, 73u, 73u, 74u, 75u, 75u, 76u, 77u, 77u, 78u, 78u,
+    79u, 80u, 80u, 81u, 81u, 82u, 83u, 83u, 84u, 85u, 85u, 86u, 86u, 87u, 88u, 88u,
+    89u, 90u, 90u, 91u, 91u, 92u, 93u, 93u, 94u, 95u, 95u, 96u, 96u, 97u, 98u, 98u,
+    99u, 99u, 100u, 101u, 101u, 102u, 103u, 103u, 104u, 104u, 105u, 106u, 106u, 107u, 108u, 108u,
+    109u, 109u, 110u, 111u, 111u, 112u, 113u, 113u, 114u, 114u, 115u, 116u, 116u, 117u, 118u, 118u,
+    119u, 119u, 120u, 121u, 121u, 122u, 122u, 123u, 124u, 124u, 125u, 126u, 126u, 127u, 127u, 128u,
+    129u, 129u, 130u, 131u, 131u, 132u, 132u, 133u, 134u, 134u, 135u, 136u, 136u, 137u, 137u, 138u,
+    139u, 139u, 140u, 140u, 141u, 142u, 142u, 143u, 144u, 144u, 145u, 145u, 146u, 147u, 147u, 148u,
+    149u, 149u, 150u, 150u, 151u, 152u, 152u, 153u, 154u, 154u, 155u, 155u, 156u, 157u, 157u, 158u
+};
+
 static uint16_t base_pitch_hz = 440u;
 static uint16_t lfo_depth_hz = 400u;
 static uint8_t lfo_speed = 19u;
@@ -386,7 +405,7 @@ static void rebuild_lfo_waveform_cache(void) {
 }
 
 static void draw_lfo_marker(void) {
-    uint8_t x = (uint8_t)(((uint32_t)lfo_phase * (WAVEFORM_PIXEL_W - 1u)) >> 16);
+    uint8_t x = phase_to_marker_x[(uint8_t)(lfo_phase >> 8)];
     uint8_t y = waveform_y_pixels[x];
 
     move_sprite(0u, (uint8_t)(8u + x), (uint8_t)(16u + (WAVEFORM_START_Y * 8u) + y));
